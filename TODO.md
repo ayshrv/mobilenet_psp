@@ -1,0 +1,5 @@
+- [ ] Configure learning rate 20 times for PSP Module
+- [ ] 90x90 for loss and 713x713 for accuracies. Process labels accordingly.
+- [ ] Remove Segementation Faults
+- [ ] See others code for simplying things like label processing and loss calculation
+- [ ] Configure Training Parameters

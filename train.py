@@ -330,6 +330,7 @@ def process_labels(labels):
     return tf.cast(labels,dtype=tf.float32)
 
 def process_labels_for_cross_entropy_loss(labels):
+    # labels = tf.image.resize_images(labels, [90,90],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     labels = tf.cast(tf.squeeze(labels,axis=3),dtype=tf.int32)
     invalid_labels_mask = tf.equal( labels, tf.constant( 255, dtype=tf.int32 ) )
     new_labels1 = tf.constant(-1, shape=labels.get_shape(),dtype = tf.int32 )
