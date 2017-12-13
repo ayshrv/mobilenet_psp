@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/ayush123/SemanticSegmentation/MobileNet/MobileNetPreTrained/model.ckpt-906808"
+all_model_checkpoint_paths: "/home/ayush123/SemanticSegmentation/MobileNet/MobileNetPreTrained/model.ckpt-906808"
