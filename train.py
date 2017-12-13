@@ -14,13 +14,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #Path to SemanticSegmentation Folder
-SemanticSegmentation_DIR = '/home/ayush/SemanticSegmentation/'
+SemanticSegmentation_DIR = '/home/n1703300e/SS/'
 
 sys.path.insert(0, SemanticSegmentation_DIR+'Datasets/Cityscapes/cityscapesScripts/cityscapesscripts/helpers')
 from labels import id2label, trainId2label
 
 #Set Visible CUDA Devices
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -52,7 +52,7 @@ OPTIMIZER = 'sgd'       #'rmsprop' or 'sgd'
 
 START_LEARNING_RATE = 0.01
 LEARNING_RATE_DECAY_FACTOR = 0.5
-NUM_EPOCHS_PER_DELAY = 100.0
+NUM_EPOCHS_PER_DELAY = 10.0
 
 #Other Flags
 LOGDIR = 'logs/GPU/test0_split_COARSE-FULL-SGD/'
@@ -62,8 +62,8 @@ MY_PRETRAINED_WEIGHTS = LOGDIR
 
 #Change these files to change the Dataset, 'train_fine.tfRecord' for Fine Dataset / 'train_coarse.tfRecord' for Coarse Dataset and same for val.
 dataset_filenames = {
-    'train': 'train_coarse.tfRecord',
-    'val': 'val_coarse.tfRecord'
+    'train': 'train_fine.tfRecord',
+    'val': 'val_fine.tfRecord'
 }
 
 #Number of images in dataset
@@ -285,19 +285,19 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
                     net_d = _pointwisePSP(net_d, 128, width_multiplier, sc='conv_ds_15d/conv_ds_15_2d')
                     if PRINT_ARCHITECTURE: print('after conv_ds_15_2d: ',net_d)
 
-                    # net_a = slim.convolution2d_transpose(net_a, 128, [90,90], [90,90],scope='conv_ds_15a/conv_t1')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_15a/convt1: ',net_a)
-                    # net_b = slim.convolution2d_transpose(net_b, 128, [45,45], [45,45],scope='conv_ds_15b/conv_t1')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_15b/convt1: ',net_b)
-                    # net_c = slim.convolution2d_transpose(net_c, 128, [30,30], [30,30],scope='conv_ds_15c/conv_t1')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_15c/convt1: ',net_c)
-                    # net_d = slim.convolution2d_transpose(net_d, 128, [15,15], [15,15],scope='conv_ds_15d/conv_t1')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_15d/convt1: ',net_d)
+                    net_a = slim.convolution2d_transpose(net_a, 128, [90,90], [90,90],scope='conv_ds_15a/conv_t1')
+                    if PRINT_ARCHITECTURE: print('after conv_ds_15a/convt1: ',net_a)
+                    net_b = slim.convolution2d_transpose(net_b, 128, [45,45], [45,45],scope='conv_ds_15b/conv_t1')
+                    if PRINT_ARCHITECTURE: print('after conv_ds_15b/convt1: ',net_b)
+                    net_c = slim.convolution2d_transpose(net_c, 128, [30,30], [30,30],scope='conv_ds_15c/conv_t1')
+                    if PRINT_ARCHITECTURE: print('after conv_ds_15c/convt1: ',net_c)
+                    net_d = slim.convolution2d_transpose(net_d, 128, [15,15], [15,15],scope='conv_ds_15d/conv_t1')
+                    if PRINT_ARCHITECTURE: print('after conv_ds_15d/convt1: ',net_d)
 
-                    net_a = tf.image.resize_bilinear(net_a, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
-                    net_b = tf.image.resize_bilinear(net_b, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
-                    net_c = tf.image.resize_bilinear(net_c, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
-                    net_d = tf.image.resize_bilinear(net_d, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
+                    # net_a = tf.image.resize_bilinear(net_a, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
+                    # net_b = tf.image.resize_bilinear(net_b, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
+                    # net_c = tf.image.resize_bilinear(net_c, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
+                    # net_d = tf.image.resize_bilinear(net_d, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
 
 
 
