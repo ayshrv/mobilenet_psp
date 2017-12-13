@@ -300,7 +300,6 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
                     net_d = tf.image.resize_bilinear(net_d, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
 
 
-
                     fuse_15 = tf.concat([net, net_a,net_b,net_c,net_d],axis=3, name='fuse_psp')
                     if PRINT_ARCHITECTURE: print('after fuse_15: ',fuse_15)
 
@@ -309,8 +308,8 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
                     net = _depthwise_separable_convPSP(net, [3,3], 1, 19, width_multiplier, sc='conv_ds_17')
                     if PRINT_ARCHITECTURE: print('after conv_ds_17: ',net)
 
-                    net = slim.convolution2d_transpose(net, 19, [90,90], [7,7], padding='VALID', scope='conv_t2')
-                    if PRINT_ARCHITECTURE: print('after conv_t2: ',net)
+                    # net = slim.convolution2d_transpose(net, 19, [90,90], [7,7], padding='VALID', scope='conv_t2')
+                    # if PRINT_ARCHITECTURE: print('after conv_t2: ',net)
 
             end_points = slim.utils.convert_collection_to_dict(end_points_collection)
             annotation_pred = tf.argmax(net, dimension=3, name="prediction")
@@ -326,7 +325,8 @@ def process_images(images):
     return images
 
 def process_labels(labels):
-    labels = tf.image.resize_images(labels, [TRAIN_IMAGE_SIZE,TRAIN_IMAGE_SIZE],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    # labels = tf.image.resize_images(labels, [TRAIN_IMAGE_SIZE,TRAIN_IMAGE_SIZE],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    labels = tf.image.resize_images(labels, [90,90],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     return tf.cast(labels,dtype=tf.float32)
 
 def process_labels_for_cross_entropy_loss(labels):
