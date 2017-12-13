@@ -55,9 +55,9 @@ LEARNING_RATE_DECAY_FACTOR = 0.5
 NUM_EPOCHS_PER_DELAY = 10.0
 
 #Other Flags
-LOGDIR = 'logs/GPU/test0_split_COARSE-FULL-SGD/'
+LOGDIR = 'logs/train1_FINE-FULL-SGD/'
 OUTPUT_FILE= LOGDIR + 'log.txt'
-PRETRAINED_CHECK_POINT = SemanticSegmentation_DIR+'MobileNet_self/MobileNetPreTrained/model.ckpt-906808'
+PRETRAINED_CHECK_POINT = SemanticSegmentation_DIR+'mobilenet_psp/MobileNetPreTrained/model.ckpt-906808'
 MY_PRETRAINED_WEIGHTS = LOGDIR
 
 #Change these files to change the Dataset, 'train_fine.tfRecord' for Fine Dataset / 'train_coarse.tfRecord' for Coarse Dataset and same for val.
