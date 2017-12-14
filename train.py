@@ -382,28 +382,12 @@ def main():
     sess.run(init)
 
     loader = tf.train.Saver(var_list=restore_var)
-    # load_step = int(os.path.basename(ckpt.model_checkpoint_path).split('-')[1])
     loader.restore(sess, FLAGS.pretrained_check_point)
-
-    # if FLAGS.use_latest_weights:
-    #     MobileNetAllWeightsFunction = weights_initialisers()
-    # else:
-    # MobileNetWeightsFunction, otherLayersInitializer, restInitializer =  weights_initialisers()
-    # localvariables = tf.initialize_local_variables()
-
-
-    # if FLAGS.use_latest_weights:
-    # 	MobileNetAllWeightsFunction(sess)
-    # else:
-    # 	MobileNetWeightsFunction(sess)
-    # 	sess.run(otherLayersInitializer)
-    # 	sess.run(restInitializer)
-    # sess.run(localvariables)
-
+    
     # Start queue threads.
     threads = tf.train.start_queue_runners(coord=coord, sess=sess)
 
-# Iterate over training steps.
+    # Iterate over training steps.
     for step in range(10000):
         start_time = time.time()
 
