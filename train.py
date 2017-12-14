@@ -291,8 +291,8 @@ def weights_initialisers():
         if tf.gfile.IsDirectory(checkpoint_path):
             checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
         return slim.assign_from_checkpoint_fn(checkpoint_path,restoreAllVars)
-    restoreVar_mobilenet = slim.get_variables_to_restore(include=['MobileNet'],exclude=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17','MobileNet/conv_t2'])
-    newLayerVariables = slim.get_variables_to_restore(include=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17','MobileNet/conv_t2'])
+    restoreVar_mobilenet = slim.get_variables_to_restore(include=['MobileNet'],exclude=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
+    newLayerVariables = slim.get_variables_to_restore(include=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
     optimizer_variables = slim.get_variables_to_restore(exclude=['MobileNet'])
 
     checkpoint_path=FLAGS.pretrained_check_point
@@ -329,7 +329,16 @@ def main():
     print(label_batch)
     raw_output = mobilenet(image_batch)
 
-    # Predictions: ignoring all predictions with labels greater or equal than n_classes
+    psp_list = ['conv_ds_15a','conv_ds_15b','conv_ds_15c','conv_ds_15d','conv_ds_16','conv_ds_17']
+    all_trainable = [v for v in tf.trainable_variables()]
+    psp_trainable = [v for v in all_trainable if v.name.split('/')[1] in psp_list]
+    conv_trainable = [v for v in all_trainable if v.name.split('/')[1] not in psp_list] # lr * 1.0
+    psp_w_trainable = [v for v in psp_trainable if 'weights' in v.name] # lr * 10.0
+    psp_b_trainable = [v for v in psp_trainable if 'biases' in v.name] # lr * 20.0
+    assert(len(all_trainable) == len(psp_trainable) + len(conv_trainable))
+    assert(len(psp_trainable) == len(psp_w_trainable) + len(psp_b_trainable))
+
+    # Predictions: ignoring all pall_trainable = [v for v in tf.trainable_variables()]redictions with labels greater or equal than n_classes
     raw_prediction = tf.reshape(raw_output, [-1, FLAGS.num_classes])
     label_proc = prepare_label(label_batch, tf.stack(raw_output.get_shape()[1:3]), num_classes=FLAGS.num_classes, one_hot=False) # [batch_size, h, w]
     raw_gt = tf.reshape(label_proc, [-1,])
@@ -342,17 +351,9 @@ def main():
 
     #TODO L2 loss and auxilary loss
 
+    #Using Poly learning rate policy
     current_epoch = tf.placeholder(dtype=tf.float32, shape=())
     tf.train.polynomial_decay(FLAGS.start_learning_rate, current_epoch, FLAGS.decay_steps, end_learning_rate=FLAGS.end_learning_rate, power=FLAGS.learning_rate_decay_power, name="poly_learning_rate")
-
-    psp_list = []
-    all_trainable = [v for v in tf.trainable_variables()]
-    #fc_trainable = [v for v in all_trainable if v.name.split('/')[0] in fc_list]
-    for i in all_trainable:
-        print(i)
-    print('end')
-    for i in tf.global_variables():
-        print(i)
 
     # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     #
@@ -375,7 +376,7 @@ def main():
     # train_batch_queue = get_batch_queue('train')
     # val_batch_queue = get_batch_queue('val')
 
-    
+
     if FLAGS.use_latest_weights:
         MobileNetAllWeightsFunction = weights_initialisers()
     else:
