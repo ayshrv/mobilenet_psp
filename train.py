@@ -278,15 +278,15 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
 
 
 def weights_initialisers():
-    if FLAGS.use_latest_weights:
-        restoreAllVars = slim.get_variables_to_restore()
-        print(
-            'Ignoring %s because a checkpoint already exists in %s'
-             % (FLAGS.pretrained_check_point, FLAGS.my_pretrained_weights) )
-        checkpoint_path = FLAGS.my_pretrained_weights
-        if tf.gfile.IsDirectory(checkpoint_path):
-            checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
-        return slim.assign_from_checkpoint_fn(checkpoint_path,restoreAllVars)
+    # if FLAGS.use_latest_weights:
+    #     restoreAllVars = slim.get_variables_to_restore()
+    #     print(
+    #         'Ignoring %s because a checkpoint already exists in %s'
+    #          % (FLAGS.pretrained_check_point, FLAGS.my_pretrained_weights) )
+    #     checkpoint_path = FLAGS.my_pretrained_weights
+    #     if tf.gfile.IsDirectory(checkpoint_path):
+    #         checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
+    #     return slim.assign_from_checkpoint_fn(checkpoint_path,restoreAllVars)
 
     restoreVar_mobilenet = slim.get_variables_to_restore(include=['MobileNet'],exclude=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
     restoreVar_mobilenet = [v for v in restoreVar_mobilenet if 'Momentum' not in v.name]
@@ -332,6 +332,8 @@ def main():
     psp_w_trainable = [v for v in psp_trainable if 'weights' in v.name] # lr * 10.0
     psp_b_trainable = [v for v in psp_trainable if 'biases' in v.name] # lr * 20.0
 
+    restore_var = [v for v in all_trainable if (v.name.split('/')[1] not in psp_list and 'Momentum' not in v.name)]
+
     assert(len(all_trainable) == len(psp_trainable) + len(conv_trainable))
     assert(len(psp_trainable) == len(psp_w_trainable) + len(psp_b_trainable))
 
@@ -371,42 +373,38 @@ def main():
 
         train_op = tf.group(train_op_conv, train_op_psp_w, train_op_psp_b)
 
-    # if FLAGS.use_latest_weights:
-    #     MobileNetAllWeightsFunction = weights_initialisers()
-    # else:
-    #     MobileNetWeightsFunction, otherLayersInitializer, restInitializer =  weights_initialisers()
-    # localvariables = tf.initialize_local_variables()
-
     # Set up tf session and initialize variables.
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
-    init = tf.initialize_all_variables()
-
-    if FLAGS.use_latest_weights:
-	 MobileNetAllWeightsFunction = weights_initialisers()
-    else:
-	MobileNetWeightsFunction, otherLayersInitializer, restInitializer =  weights_initialisers()
-    localvariables = tf.initialize_local_variables()
-
-
+    init = tf.global_variables_initializer()
 
     sess.run(init)
-    if FLAGS.use_latest_weights:
-	MobileNetAllWeightsFunction(sess)
-    else:
-	MobileNetWeightsFunction(sess)
-	sess.run(otherLayersInitializer)		
-	sess.run(restInitializer)
-    sess.run(localvariables)
 
-    load_step = 0
+    loader = tf.train.Saver(var_list=restore_var)
+    # load_step = int(os.path.basename(ckpt.model_checkpoint_path).split('-')[1])
+    load(loader, sess, FLAGS.pretrained_check_point)
+
+    # if FLAGS.use_latest_weights:
+    #     MobileNetAllWeightsFunction = weights_initialisers()
+    # else:
+    # MobileNetWeightsFunction, otherLayersInitializer, restInitializer =  weights_initialisers()
+    # localvariables = tf.initialize_local_variables()
+
+
+    # if FLAGS.use_latest_weights:
+    # 	MobileNetAllWeightsFunction(sess)
+    # else:
+    # 	MobileNetWeightsFunction(sess)
+    # 	sess.run(otherLayersInitializer)
+    # 	sess.run(restInitializer)
+    # sess.run(localvariables)
 
     # Start queue threads.
     threads = tf.train.start_queue_runners(coord=coord, sess=sess)
 
 # Iterate over training steps.
-    for step in range(1000):
+    for step in range(10000):
         start_time = time.time()
 
         feed_dict = {current_epoch: 0}
