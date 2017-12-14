@@ -383,18 +383,19 @@ def main():
     # with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
     with tf.Session() as sess:
 
-            if FLAGS.use_latest_weights:
-                MobileNetAllWeightsFunction(sess)
-            else:
-                MobileNetWeightsFunction(sess)
-                sess.run(otherLayersInitializer)
-                sess.run(restInitializer)
-            sess.run(localvariables)
-            coord = tf.train.Coordinator()
-            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+        if FLAGS.use_latest_weights:
+            MobileNetAllWeightsFunction(sess)
+        else:
+            MobileNetWeightsFunction(sess)
+            sess.run(otherLayersInitializer)
+            sess.run(restInitializer)
+        sess.run(localvariables)
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-            finally:
-                coord.request_stop()
-                coord.join(threads)
 
-sys.stdout.close()
+    coord.request_stop()
+    coord.join(threads)
+
+if __name__ == '__main__':
+    main()
