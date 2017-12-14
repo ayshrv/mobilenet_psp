@@ -36,7 +36,7 @@ tf.app.flags.DEFINE_string(
     'pretrained_check_point', 'MobileNetPreTrained/model.ckpt-906808',
     'Directory where the data is located.')
 
-tf.app.flags.DEFINE_boolean('random_scale', True,
+tf.app.flags.DEFINE_boolean('random_scale', False,
                             'Whether to randomly scale the inputs during the training.')
 
 tf.app.flags.DEFINE_boolean('random_mirror', True,
@@ -213,7 +213,7 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
                                 weights_regularizer=slim.l2_regularizer(weight_decay)):
         with tf.variable_scope(scope) as sc:
             with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d], activation_fn=None):
-                with slim.arg_scope([slim.batch_norm], is_training=is_training, activation_fn=tf.nn.relu, fused=True):
+                with slim.arg_scope([slim.batch_norm], is_training=is_training, activation_fn=tf.nn.relu, fused=False):
                     net = slim.convolution2d(inputs, round(32 * width_multiplier), [3, 3], stride=2, padding='SAME', scope='conv_1')
                     net = slim.batch_norm(net, scope='conv_1/batch_norm')
                     if FLAGS.print_architecture: print('after conv_1: ',net)
@@ -308,7 +308,7 @@ def main():
     if FLAGS.print_info:
         print_info()
 
-    input_size = (FLAGS.image_height, FLAGS.image_width)
+    input_size = (FLAGS.train_image_size, FLAGS.train_image_size)
 
     tf.set_random_seed(1234)
 
@@ -325,13 +325,15 @@ def main():
             coord)
     image_batch, label_batch = reader.dequeue(FLAGS.batch_size)
 
+    print(image_batch)
+    print(label_batch)
     raw_output = mobilenet(image_batch)
 
     # Predictions: ignoring all predictions with labels greater or equal than n_classes
-    raw_prediction = tf.reshape(raw_output, [-1, args.num_classes])
-    label_proc = prepare_label(label_batch, tf.stack(raw_output.get_shape()[1:3]), num_classes=args.num_classes, one_hot=False) # [batch_size, h, w]
+    raw_prediction = tf.reshape(raw_output, [-1, FLAGS.num_classes])
+    label_proc = prepare_label(label_batch, tf.stack(raw_output.get_shape()[1:3]), num_classes=FLAGS.num_classes, one_hot=False) # [batch_size, h, w]
     raw_gt = tf.reshape(label_proc, [-1,])
-    indices = tf.squeeze(tf.where(tf.less_equal(raw_gt, args.num_classes - 1)), 1)
+    indices = tf.squeeze(tf.where(tf.less_equal(raw_gt, FLAGS.num_classes - 1)), 1)
     gt = tf.cast(tf.gather(raw_gt, indices), tf.int32)
     prediction = tf.gather(raw_prediction, indices)
 
@@ -345,9 +347,12 @@ def main():
 
     psp_list = []
     all_trainable = [v for v in tf.trainable_variables()]
-    fc_trainable = [v for v in all_trainable if v.name.split('/')[0] in fc_list]
-    print(all_trainable)
-
+    #fc_trainable = [v for v in all_trainable if v.name.split('/')[0] in fc_list]
+    for i in all_trainable:
+        print(i)
+    print('end')
+    for i in tf.global_variables():
+        print(i)
 
     # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     #
@@ -370,7 +375,7 @@ def main():
     # train_batch_queue = get_batch_queue('train')
     # val_batch_queue = get_batch_queue('val')
 
-
+    
     if FLAGS.use_latest_weights:
         MobileNetAllWeightsFunction = weights_initialisers()
     else:
