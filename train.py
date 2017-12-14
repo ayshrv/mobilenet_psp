@@ -383,7 +383,7 @@ def main():
 
     loader = tf.train.Saver(var_list=restore_var)
     # load_step = int(os.path.basename(ckpt.model_checkpoint_path).split('-')[1])
-    load(loader, sess, FLAGS.pretrained_check_point)
+    loader.restore(sess, FLAGS.pretrained_check_point)
 
     # if FLAGS.use_latest_weights:
     #     MobileNetAllWeightsFunction = weights_initialisers()
