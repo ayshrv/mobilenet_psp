@@ -36,7 +36,7 @@ tf.app.flags.DEFINE_string(
     'pretrained_check_point', 'MobileNetPreTrained/model.ckpt-906808',
     'Directory where the data is located.')
 
-tf.app.flags.DEFINE_boolean('random_scale', False,
+tf.app.flags.DEFINE_boolean('random_scale', True,
                             'Whether to randomly scale the inputs during the training.')
 
 tf.app.flags.DEFINE_boolean('random_mirror', True,
@@ -331,10 +331,20 @@ def main():
 
     psp_list = ['conv_ds_15a','conv_ds_15b','conv_ds_15c','conv_ds_15d','conv_ds_16','conv_ds_17']
     all_trainable = [v for v in tf.trainable_variables()]
-    psp_trainable = [v for v in all_trainable if v.name.split('/')[1] in psp_list]
-    conv_trainable = [v for v in all_trainable if v.name.split('/')[1] not in psp_list] # lr * 1.0
+    psp_trainable = [v for v in all_trainable if v.name.split('/')[1] in psp_list and ('weights' in v.name or 'biases' in v.name)]
+    conv_trainable = [v for v in all_trainable if v not in psp_trainable] # lr * 1.0
     psp_w_trainable = [v for v in psp_trainable if 'weights' in v.name] # lr * 10.0
     psp_b_trainable = [v for v in psp_trainable if 'biases' in v.name] # lr * 20.0
+    
+    print('psp_trainable')
+    for i in psp_trainable:
+	print(i)
+    print('psp_w_trainable')
+    for i in psp_w_trainable:
+	print(i)
+    print('psp_b_trainable')
+    for i in psp_b_trainable:
+	print(i)
     assert(len(all_trainable) == len(psp_trainable) + len(conv_trainable))
     assert(len(psp_trainable) == len(psp_w_trainable) + len(psp_b_trainable))
 
