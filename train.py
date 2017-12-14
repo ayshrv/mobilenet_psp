@@ -84,11 +84,11 @@ tf.app.flags.DEFINE_integer('num_classes', 19,
 tf.app.flags.DEFINE_integer('train_image_size', 713,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('start_epoch', 1,
+tf.app.flags.DEFINE_integer('num_epochs', 50,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('end_epoch', 200,
-                            'Which GPU to use.')
+# tf.app.flags.DEFINE_integer('end_epoch', 200,
+#                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_string('optimizer', 'sgd',
                             'Which GPU to use.')
@@ -117,7 +117,7 @@ tf.app.flags.DEFINE_float('momentum', 0.9,
 
 FLAGS = tf.app.flags.FLAGS
 FLAGS.my_pretrained_weights = FLAGS.log_dir
-FLAGS.num_epochs = FLAGS.end_epoch - FLAGS.start_epoch + 1
+# FLAGS.num_epochs = FLAGS.end_epoch - FLAGS.start_epoch + 1
 
 IMG_MEAN = np.array((103.939, 116.779, 123.68), dtype=np.float32)
 
@@ -275,8 +275,6 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
     return net
     # return tf.cast(tf.expand_dims(annotation_pred, dim=3),dtype=tf.uint8), net
 
-
-
 def weights_initialisers():
     # if FLAGS.use_latest_weights:
     #     restoreAllVars = slim.get_variables_to_restore()
@@ -300,6 +298,15 @@ def weights_initialisers():
     otherLayerInitializer = tf.variables_initializer(newLayerVariables)
     restInitializer = tf.variables_initializer(optimizer_variables)
     return readMobileNetWeights, otherLayerInitializer, restInitializer
+
+def save(saver, sess, logdir, step):
+   model_name = 'model.ckpt'
+   checkpoint_path = os.path.join(logdir, model_name)
+
+   if not os.path.exists(logdir):
+      os.makedirs(logdir)
+   saver.save(sess, checkpoint_path, global_step=step)
+   print('The checkpoint has been created.')
 
 def main():
 
@@ -381,24 +388,32 @@ def main():
 
     sess.run(init)
 
+    # Saver for storing checkpoints of the model.
+    saver = tf.train.Saver(var_list=tf.global_variables(), max_to_keep=100)
+
     loader = tf.train.Saver(var_list=restore_var)
     loader.restore(sess, FLAGS.pretrained_check_point)
-    
+
     # Start queue threads.
     threads = tf.train.start_queue_runners(coord=coord, sess=sess)
 
     # Iterate over training steps.
-    for step in range(10000):
-        start_time = time.time()
+    for epoch in range(1, FLAGS.num_epochs):
 
-        feed_dict = {current_epoch: 0}
-        # if step % args.save_pred_every == 0:
-            # loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
-            # save(saver, sess, args.snapshot_dir, step)
-        # else:
-        loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
-        duration = time.time() - start_time
-        print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
+        for step in range(1,2975+1):
+
+            start_time = time.time()
+
+            feed_dict = {current_epoch: epoch}
+            loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
+
+            duration = time.time() - start_time
+            print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
+
+            # if step % args.save_pred_every == 0:
+                # loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
+        save(saver, sess, FLAGS.log_dir, epoch)
+            # else:
 
 
     coord.request_stop()
