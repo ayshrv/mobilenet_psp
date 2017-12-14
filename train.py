@@ -54,7 +54,7 @@ tf.app.flags.DEFINE_integer('gpu', 0,
 tf.app.flags.DEFINE_boolean('print_architecture', True,
                             'Print architecure.')
 
-tf.app.flags.DEFINE_boolean('print_info', True,
+tf.app.flags.DEFINE_boolean('print_info', False,
                             'Print info.')
 
 tf.app.flags.DEFINE_boolean('do_validaiton', True,
@@ -282,13 +282,14 @@ def weights_initialisers():
         restoreAllVars = slim.get_variables_to_restore()
         print(
             'Ignoring %s because a checkpoint already exists in %s'
-             % (FLAGS.pretrained_check_point, FLAGS.my_pretrained_weights)
+             % (FLAGS.pretrained_check_point, FLAGS.my_pretrained_weights) )
         checkpoint_path = FLAGS.my_pretrained_weights
         if tf.gfile.IsDirectory(checkpoint_path):
             checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
         return slim.assign_from_checkpoint_fn(checkpoint_path,restoreAllVars)
 
     restoreVar_mobilenet = slim.get_variables_to_restore(include=['MobileNet'],exclude=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
+    restoreVar_mobilenet = [v for v in restoreVar_mobilenet if 'Momentum' not in v.name]
     newLayerVariables = slim.get_variables_to_restore(include=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
     optimizer_variables = slim.get_variables_to_restore(exclude=['MobileNet'])
 
@@ -380,14 +381,24 @@ def main():
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
-    init = tf.global_variables_initializer()
+    init = tf.initialize_all_variables()
 
-    weight_init = tf.group(weights_initialisers())
+    if FLAGS.use_latest_weights:
+	 MobileNetAllWeightsFunction = weights_initialisers()
+    else:
+	MobileNetWeightsFunction, otherLayersInitializer, restInitializer =  weights_initialisers()
+    localvariables = tf.initialize_local_variables()
 
 
 
     sess.run(init)
-    sess.run(weight_init)
+    if FLAGS.use_latest_weights:
+	MobileNetAllWeightsFunction(sess)
+    else:
+	MobileNetWeightsFunction(sess)
+	sess.run(otherLayersInitializer)		
+	sess.run(restInitializer)
+    sess.run(localvariables)
 
     load_step = 0
 
