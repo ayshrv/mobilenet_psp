@@ -1,4 +1,4 @@
-FLAGS.print_architecturefrom __future__ import absolute_import
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -49,7 +49,7 @@ tf.app.flags.DEFINE_boolean('use_latest_weights', False,
 tf.app.flags.DEFINE_integer('image_width', 1024,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('image_width', 2048,
+tf.app.flags.DEFINE_integer('image_height', 2048,
                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_integer('num_readers', 8,
