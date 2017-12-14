@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 slim = tf.contrib.slim
 
 tf.app.flags.DEFINE_string(
-    'data_dir', '/home/n1703300e/SS/Datasets/Cityscapes/',
+    'data_dir', '/home/n1703300e/SS/Datasets/cityscapes-images/',
     'Directory where the data is located.')
 
 tf.app.flags.DEFINE_string(
@@ -62,10 +62,10 @@ tf.app.flags.DEFINE_boolean('do_validaiton', True,
 tf.app.flags.DEFINE_boolean('use_latest_weights', False,
                             'Use latest weights.')
 
-tf.app.flags.DEFINE_integer('image_width', 1024,
+tf.app.flags.DEFINE_integer('image_width', 2048,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('image_height', 2048,
+tf.app.flags.DEFINE_integer('image_height', 1024,
                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_integer('num_readers', 8,
@@ -310,7 +310,7 @@ def main():
 
     input_size = (FLAGS.image_height, FLAGS.image_width)
 
-    tf.set_random_seed(args.random_seed)
+    tf.set_random_seed(1234)
 
     coord = tf.train.Coordinator()
 
