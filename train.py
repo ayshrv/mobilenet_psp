@@ -8,6 +8,7 @@ import tensorflow as tf
 from image_reader import ImageReader
 from tools import decode_labels, prepare_label
 
+import time
 import os
 import os.path as osp
 import sys
@@ -352,7 +353,7 @@ def main():
 
     # Pixel-wise softmax loss.
     loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=prediction, labels=gt)
-    reduced_loss = loss
+    reduced_loss = tf.reduce_mean(loss)
     #TODO L2 loss and auxilary loss
 
     #Using Poly learning rate policy
@@ -400,7 +401,7 @@ def main():
     for step in range(1000):
         start_time = time.time()
 
-        feed_dict = {current_epoch: 1}
+        feed_dict = {current_epoch: 0}
         # if step % args.save_pred_every == 0:
             # loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
             # save(saver, sess, args.snapshot_dir, step)
@@ -408,6 +409,9 @@ def main():
         loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
         duration = time.time() - start_time
         print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
+        #print(step)
+	#print(loss_value)
+	#print(duration)
 
     coord.request_stop()
     coord.join(threads)
