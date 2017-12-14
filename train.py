@@ -1,6 +1,9 @@
-from __future__ import absolute_import
+FLAGS.print_architecturefrom __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
+import numpy as np
+import tensorflow as tf
 
 import os
 import os.path as osp
@@ -11,61 +14,145 @@ import numpy as np
 np.set_printoptions(threshold=np.nan)
 from scipy import misc
 import matplotlib.pyplot as plt
-import numpy as np
 
-#Path to SemanticSegmentation Folder
-SemanticSegmentation_DIR = '/home/n1703300e/SS/'
+slim = tf.contrib.slim
 
-sys.path.insert(0, SemanticSegmentation_DIR+'Datasets/Cityscapes/cityscapesScripts/cityscapesscripts/helpers')
+tf.app.flags.DEFINE_string(
+    'data_dir', '/home/n1703300e/SS/Datasets/Cityscapes',
+    'Directory where the data is located.')
+
+tf.app.flags.DEFINE_string(
+    'log_dir', 'logs/train1_FINE-FULL-SGD/',
+    'Directory where the data is located.')
+
+tf.app.flags.DEFINE_string(
+    'pretrained_check_point', 'MobileNetPreTrained/model.ckpt-906808',
+    'Directory where the data is located.')
+
+
+tf.app.flags.DEFINE_integer('gpu', 0,
+                            'Which GPU to use.')
+
+
+tf.app.flags.DEFINE_boolean('print_architecture', True,
+                            'Print architecure.')
+
+tf.app.flags.DEFINE_boolean('print_info', True,
+                            'Print info.')
+
+tf.app.flags.DEFINE_boolean('do_validaiton', True,
+                            'Perform validation')
+
+tf.app.flags.DEFINE_boolean('use_latest_weights', False,
+                            'Use latest weights.')
+
+tf.app.flags.DEFINE_integer('image_width', 1024,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('image_width', 2048,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('num_readers', 8,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('num_preprocessing_threads', 8,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('batch_size', 1,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('num_classes', 19,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('train_image_size', 713,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('start_epoch', 1,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('end_epoch', 200,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_string('optimizer', 'sgd',
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('start_learning_rate', 0.01,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('learning_rate_decay_factor', 0.5,
+                            'Which GPU to use.')
+
+tf.app.flags.DEFINE_integer('num_epochs_per_delay', 5,
+                            'Which GPU to use.')
+
+
+FLAGS = tf.app.flags.FLAGS
+FLAGS.my_pretrained_weights = FLAGS.log_dir
+FLAGS.num_epochs = FLAGS.end_epoch - FLAGS.start_epoch + 1
+
+sys.path.insert(0, FLAGS.data_dir+'/cityscapesScripts/cityscapesscripts/helpers')
 from labels import id2label, trainId2label
 
 #Set Visible CUDA Devices
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-
-import tensorflow as tf
-import tensorflow.contrib.slim as slim
-
-PRINT_ARCHITECTURE = True
-PRINT_INFO = True
-DO_VALIDATION = True
-OUTPUT_TO_FILE = False
-USE_LATEST_WEIGHTS = False
+os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(FLAGS.gpu)
 
 
-#Dataset Flags
-DATASET_DIR = SemanticSegmentation_DIR+'Datasets/Cityscapes/'
-IMAGE_WIDTH = 1024
-IMAGE_HEIGHT = 2048
-NUM_READERS = 8
-NUM_PREPROCESSING_THREADS = 8
+
+
+# # Path to SemanticSegmentation Folder
+# SemanticSegmentation_DIR = '/home/n1703300e/SS'
+
+# sys.path.insert(0, SemanticSegmentation_DIR+'Datasets/Cityscapes/cityscapesScripts/cityscapesscripts/helpers')
+# from labels import id2label, trainId2label
+
+# # Set Visible CUDA Devices
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
+
+# PRINT_ARCHITECTURE = True
+# PRINT_INFO = True
+# DO_VALIDATION = True
+# OUTPUT_TO_FILE = False
+# USE_LATEST_WEIGHTS = False
+
+
+# #Dataset Flags
+# DATASET_DIR = SemanticSegmentation_DIR+'Datasets/Cityscapes/'
+# IMAGE_WIDTH = 1024
+# IMAGE_HEIGHT = 2048
+# NUM_READERS = 8
+# NUM_PREPROCESSING_THREADS = 8
 
 #Model Flags
-BATCH_SIZE = 1  #If changed, change process_mask_for_iou_loss also, as batch_size 1 assumed there.
-NUM_CLASSES = 19
-TRAIN_IMAGE_SIZE = 713
+# BATCH_SIZE = 1  #If changed, change process_mask_for_iou_loss also, as batch_size 1 assumed there.
+# NUM_CLASSES = 19
+# TRAIN_IMAGE_SIZE = 713
 
 #Training Flags
-START_EPOCH = 1
-END_EPOCH = 200
-NUM_EPOCHS = END_EPOCH - START_EPOCH + 1
-OPTIMIZER = 'sgd'       #'rmsprop' or 'sgd'
+# START_EPOCH = 1
+# END_EPOCH = 200
+# NUM_EPOCHS = END_EPOCH - START_EPOCH + 1
+# OPTIMIZER = 'sgd'       #'rmsprop' or 'sgd'
 
-START_LEARNING_RATE = 0.01
-LEARNING_RATE_DECAY_FACTOR = 0.5
-NUM_EPOCHS_PER_DELAY = 10.0
+# START_LEARNING_RATE = 0.01
+# LEARNING_RATE_DECAY_FACTOR = 0.5
+# NUM_EPOCHS_PER_DELAY = 10.0
 
-#Other Flags
-LOGDIR = 'logs/train1_FINE-FULL-SGD/'
-OUTPUT_FILE= LOGDIR + 'log.txt'
-PRETRAINED_CHECK_POINT = SemanticSegmentation_DIR+'mobilenet_psp/MobileNetPreTrained/model.ckpt-906808'
-MY_PRETRAINED_WEIGHTS = LOGDIR
+# #Other Flags
+# LOGDIR = 'logs/train1_FINE-FULL-SGD/'
+# OUTPUT_FILE= LOGDIR + 'log.txt'
+# PRETRAINED_CHECK_POINT = SemanticSegmentation_DIR+'mobilenet_psp/MobileNetPreTrained/model.ckpt-906808'
+# MY_PRETRAINED_WEIGHTS = LOGDIR
 
 #Change these files to change the Dataset, 'train_fine.tfRecord' for Fine Dataset / 'train_coarse.tfRecord' for Coarse Dataset and same for val.
+
+#TODO Settle Fine Coarse
 dataset_filenames = {
     'train': 'train_fine.tfRecord',
     'val': 'val_fine.tfRecord'
 }
 
+#TODO Settle Fine Coarse Number
 #Number of images in dataset
 NUM_SAMPLES = {
         'train': 2975,
@@ -88,24 +175,19 @@ TrainStep = tf.placeholder(tf.bool)
 train_mean_loss_summary = []
 val_mean_loss_summary = []
 
-if OUTPUT_TO_FILE:
-    if not osp.isdir(LOGDIR):
-        os.makedirs(LOGDIR)
-    sys.stdout=open(OUTPUT_FILE,"w")
-
 def print_info():
-    print('Start Epoch: %d' % (START_EPOCH))
-    print('End Epoch: %d' % (END_EPOCH))
-    print('No. Of Epochs: %d' % (NUM_EPOCHS))
-    print('Total Running Steps: %d\n' % (NUM_EPOCHS*NUM_SAMPLES['train']))
-    print('Batch Size: %d' % (BATCH_SIZE))
-    print('Train Image Size: %d' % (TRAIN_IMAGE_SIZE))
-    print('No. Of Classes: %d\n' % (NUM_CLASSES))
-    print('Optimizer: %s' % (OPTIMIZER))
-    print('Start learning Rate: %f' % (START_LEARNING_RATE))
+    print('Start Epoch: %d' % (FLAGS.start_epoch))
+    print('End Epoch: %d' % (FLAGS.end_epoch))
+    print('No. Of Epochs: %d' % (FLAGS.num_epochs))
+    print('Total Running Steps: %d\n' % (FLAGS.num_epochs*NUM_SAMPLES['train']))
+    print('Batch Size: %d' % (FLAGS.batch_size))
+    print('Train Image Size: %d' % (FLAGS.train_image_size))
+    print('No. Of Classes: %d\n' % (FLAGS.num_classes))
+    print('Optimizer: %s' % (FLAGS.optimizer))
+    print('Start learning Rate: %f' % (FLAGS.start_learning_rate))
     print('End learning Rate: ')
-    print('Learning Rate Decay Factor: %f' % (LEARNING_RATE_DECAY_FACTOR))
-    print('Decay Learning Rate After %d Epoch\n' % (NUM_EPOCHS_PER_DELAY))
+    print('Learning Rate Decay Factor: %f' % (FLAGS.learning_rate_decay_factor))
+    print('Decay Learning Rate After %d Epoch\n' % (FLAGS.num_epochs_per_delay))
 
 
 def get_dataset(dataset_dir, split_name):
@@ -169,7 +251,7 @@ def get_dataset(dataset_dir, split_name):
             decoder=decoder,
             num_samples=NUM_SAMPLES[split_name],
             items_to_descriptions=_ITEMS_TO_DESCRIPTIONS,
-            num_classes=NUM_CLASSES,
+            num_classes=FLAGS.num_classes,
             )
     return dataset
 
@@ -239,60 +321,60 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
                 with slim.arg_scope([slim.batch_norm], is_training=is_training, activation_fn=tf.nn.relu):
                     net = slim.convolution2d(inputs, round(32 * width_multiplier), [3, 3], stride=2, padding='SAME', scope='conv_1')
                     net = slim.batch_norm(net, scope='conv_1/batch_norm')
-                    if PRINT_ARCHITECTURE: print('after conv_1: ',net)
+                    if FLAGS.print_architecture: print('after conv_1: ',net)
                     net = _depthwise_separable_conv(net, 64, width_multiplier, sc='conv_ds_2')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_2: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_2: ',net)
                     net = _depthwise_separable_conv(net, 128, width_multiplier, downsample=True, sc='conv_ds_3')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_3: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_3: ',net)
                     net = _depthwise_separable_conv(net, 128, width_multiplier, sc='conv_ds_4')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_4: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_4: ',net)
                     net = _depthwise_separable_conv(net, 256, width_multiplier, downsample=True, sc='conv_ds_5')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_5: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_5: ',net)
                     net = _depthwise_separable_conv(net, 256, width_multiplier, sc='conv_ds_6')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_6: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_6: ',net)
                     net = _depthwise_separable_conv(net, 512, width_multiplier, downsample=False, sc='conv_ds_7')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_7: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_7: ',net)
                     net = _depthwise_separable_conv(net, 512, width_multiplier, sc='conv_ds_8')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_8: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_8: ',net)
                     net = _depthwise_separable_conv(net, 512, width_multiplier, sc='conv_ds_9')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_9: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_9: ',net)
                     net = _depthwise_separable_conv(net, 512, width_multiplier, sc='conv_ds_10')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_10: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_10: ',net)
                     net = _depthwise_separable_conv(net, 512, width_multiplier, sc='conv_ds_11')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_11: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_11: ',net)
                     net = _depthwise_separable_conv(net, 512, width_multiplier, sc='conv_ds_12')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_12: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_12: ',net)
                     # net = _depthwise_separable_conv(net, 1024, width_multiplier, downsample=False, sc='conv_ds_13')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_13: ',net)
+                    # if FLAGS.print_architecture: print('after conv_ds_13: ',net)
                     # net = _depthwise_separable_conv(net, 1024, width_multiplier, sc='conv_ds_14')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_14: ',net)
+                    # if FLAGS.print_architecture: print('after conv_ds_14: ',net)
 
                     net_a = slim.avg_pool2d(net, [90,90], stride=90, scope='conv_ds_15a/pool_15_1a')
-                    if PRINT_ARCHITECTURE: print('after pool_15_1a: ',net_a)
+                    if FLAGS.print_architecture: print('after pool_15_1a: ',net_a)
                     net_b = slim.avg_pool2d(net, [45,45], stride=45, scope='conv_ds_15b/pool_15_1b')
-                    if PRINT_ARCHITECTURE: print('after pool_15_1b: ',net_b)
+                    if FLAGS.print_architecture: print('after pool_15_1b: ',net_b)
                     net_c = slim.avg_pool2d(net, [30,30], stride=30, scope='conv_ds_15c/pool_15_1c')
-                    if PRINT_ARCHITECTURE: print('after pool_15_1c: ',net_c)
+                    if FLAGS.print_architecture: print('after pool_15_1c: ',net_c)
                     net_d = slim.avg_pool2d(net, [15,15], stride=15, scope='conv_ds_15d/pool_15_1d')
-                    if PRINT_ARCHITECTURE: print('after pool_15_1d: ',net_d)
+                    if FLAGS.print_architecture: print('after pool_15_1d: ',net_d)
 
                     net_a = _pointwisePSP(net_a, 128, width_multiplier, sc='conv_ds_15a/conv_ds_15_2a')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_15_2a: ',net_a)
+                    if FLAGS.print_architecture: print('after conv_ds_15_2a: ',net_a)
                     net_b= _pointwisePSP(net_b, 128, width_multiplier, sc='conv_ds_15b/conv_ds_15_2b')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_15_2b: ',net_b)
+                    if FLAGS.print_architecture: print('after conv_ds_15_2b: ',net_b)
                     net_c = _pointwisePSP(net_c, 128, width_multiplier, sc='conv_ds_15c/conv_ds_15_2c')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_15_2c: ',net_c)
+                    if FLAGS.print_architecture: print('after conv_ds_15_2c: ',net_c)
                     net_d = _pointwisePSP(net_d, 128, width_multiplier, sc='conv_ds_15d/conv_ds_15_2d')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_15_2d: ',net_d)
+                    if FLAGS.print_architecture: print('after conv_ds_15_2d: ',net_d)
 
                     # net_a = slim.convolution2d_transpose(net_a, 128, [90,90], [90,90],scope='conv_ds_15a/conv_t1')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_15a/convt1: ',net_a)
+                    # if FLAGS.print_architecture: print('after conv_ds_15a/convt1: ',net_a)
                     # net_b = slim.convolution2d_transpose(net_b, 128, [45,45], [45,45],scope='conv_ds_15b/conv_t1')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_15b/convt1: ',net_b)
+                    # if FLAGS.print_architecture: print('after conv_ds_15b/convt1: ',net_b)
                     # net_c = slim.convolution2d_transpose(net_c, 128, [30,30], [30,30],scope='conv_ds_15c/conv_t1')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_15c/convt1: ',net_c)
+                    # if FLAGS.print_architecture: print('after conv_ds_15c/convt1: ',net_c)
                     # net_d = slim.convolution2d_transpose(net_d, 128, [15,15], [15,15],scope='conv_ds_15d/conv_t1')
-                    # if PRINT_ARCHITECTURE: print('after conv_ds_15d/convt1: ',net_d)
+                    # if FLAGS.print_architecture: print('after conv_ds_15d/convt1: ',net_d)
 
                     net_a = tf.image.resize_bilinear(net_a, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
                     net_b = tf.image.resize_bilinear(net_b, [90,90], align_corners=True, name='conv_ds_15a/conv_t1')
@@ -301,15 +383,15 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
 
 
                     fuse_15 = tf.concat([net, net_a,net_b,net_c,net_d],axis=3, name='fuse_psp')
-                    if PRINT_ARCHITECTURE: print('after fuse_15: ',fuse_15)
+                    if FLAGS.print_architecture: print('after fuse_15: ',fuse_15)
 
                     net = _depthwise_separable_convPSP(fuse_15, [3,3], 1, 128, width_multiplier, sc='conv_ds_16')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_16: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_16: ',net)
                     net = _depthwise_separable_convPSP(net, [3,3], 1, 19, width_multiplier, sc='conv_ds_17')
-                    if PRINT_ARCHITECTURE: print('after conv_ds_17: ',net)
+                    if FLAGS.print_architecture: print('after conv_ds_17: ',net)
 
                     # net = slim.convolution2d_transpose(net, 19, [90,90], [7,7], padding='VALID', scope='conv_t2')
-                    # if PRINT_ARCHITECTURE: print('after conv_t2: ',net)
+                    # if FLAGS.print_architecture: print('after conv_t2: ',net)
 
             end_points = slim.utils.convert_collection_to_dict(end_points_collection)
             annotation_pred = tf.argmax(net, dimension=3, name="prediction")
@@ -321,11 +403,11 @@ def process_images(images):
     mean_img = tf.reshape(mean_img, [1, 1, 3])
     images = tf.cast(images,dtype=tf.float32)
     images = images - mean_img
-    images = tf.image.resize_images(images, [TRAIN_IMAGE_SIZE, TRAIN_IMAGE_SIZE],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    images = tf.image.resize_images(images, [FLAGS.train_image_size, FLAGS.train_image_size],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     return images
 
 def process_labels(labels):
-    # labels = tf.image.resize_images(labels, [TRAIN_IMAGE_SIZE,TRAIN_IMAGE_SIZE],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    # labels = tf.image.resize_images(labels, [FLAGS.train_image_size,FLAGS.train_image_size],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     labels = tf.image.resize_images(labels, [90,90],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     return tf.cast(labels,dtype=tf.float32)
 
@@ -336,7 +418,7 @@ def process_labels_for_cross_entropy_loss(labels):
     new_labels1 = tf.constant(-1, shape=labels.get_shape(),dtype = tf.int32 )
     new_labels = tf.Variable(new_labels1, name='processed_labels',trainable=False)
     new_labels = new_labels.assign(tf.where (invalid_labels_mask, new_labels, labels) )
-    new_labels = tf.one_hot(new_labels,NUM_CLASSES)
+    new_labels = tf.one_hot(new_labels,FLAGS.num_classes)
     return new_labels
 
 def process_mask_for_iou_loss(labels, predictions):
@@ -365,10 +447,10 @@ def forward_pass(train_batch_queue, val_batch_queue):
         print('predictions_for_accuracy: ',predictions_iou)
         print('mask_for_invalid_entries: ',mask)
         print('\n')
-        # cf = tf.confusion_matrix(a,b,NUM_CLASSES, weights = c)
+        # cf = tf.confusion_matrix(a,b,FLAGS.num_classes, weights = c)
         # cf = tf.Print(cf,[cf.shape,cf],message='This is cf', summarize=19*19)
-        iou, update_confusion_matrix1 = tf.metrics.mean_iou(processed_labels_iou, predictions_iou, NUM_CLASSES, weights = mask)
-        mean_acc, update_confusion_matrix2 = tf.metrics.mean_per_class_accuracy(processed_labels_iou, predictions_iou, NUM_CLASSES, weights = mask)
+        iou, update_confusion_matrix1 = tf.metrics.mean_iou(processed_labels_iou, predictions_iou, FLAGS.num_classes, weights = mask)
+        mean_acc, update_confusion_matrix2 = tf.metrics.mean_per_class_accuracy(processed_labels_iou, predictions_iou, FLAGS.num_classes, weights = mask)
         acc, update_confusion_matrix3 = tf.metrics.accuracy(processed_labels_iou, predictions_iou, weights = mask)
         update_confusion_matrix = [update_confusion_matrix1, update_confusion_matrix2, update_confusion_matrix3]
 
@@ -376,14 +458,14 @@ def forward_pass(train_batch_queue, val_batch_queue):
         color_labels = tf.py_func(labelToColorImage, [labels], [tf.uint8], name='labelsToColor')
         color_predictions = tf.py_func(labelToColorImage, [predictions], [tf.uint8], name='predictionsToColor')
 
-        summaries_images_val.append(tf.summary.image('Validation/label',color_labels[0], max_outputs=BATCH_SIZE))
-        summaries_images_val.append(tf.summary.image('Validation/Prediction',color_predictions[0], max_outputs=BATCH_SIZE))
+        summaries_images_val.append(tf.summary.image('Validation/label',color_labels[0], max_outputs=FLAGS.batch_size))
+        summaries_images_val.append(tf.summary.image('Validation/Prediction',color_predictions[0], max_outputs=FLAGS.batch_size))
 
-        summaries_images.append(tf.summary.image('Training/0Image',images, max_outputs=BATCH_SIZE))
-        summaries_images.append(tf.summary.image('Training/1LabelColor',color_labels[0], max_outputs=BATCH_SIZE))
-        summaries_images.append(tf.summary.image('Training/1PredictionColor',color_predictions[0], max_outputs=BATCH_SIZE))
-        summaries_images.append(tf.summary.image('Training/2LabelGrayscale',labels, max_outputs=BATCH_SIZE))
-        summaries_images.append(tf.summary.image('Training/2PredictionsGrayscale',predictions, max_outputs=BATCH_SIZE))
+        summaries_images.append(tf.summary.image('Training/0Image',images, max_outputs=FLAGS.batch_size))
+        summaries_images.append(tf.summary.image('Training/1LabelColor',color_labels[0], max_outputs=FLAGS.batch_size))
+        summaries_images.append(tf.summary.image('Training/1PredictionColor',color_predictions[0], max_outputs=FLAGS.batch_size))
+        summaries_images.append(tf.summary.image('Training/2LabelGrayscale',labels, max_outputs=FLAGS.batch_size))
+        summaries_images.append(tf.summary.image('Training/2PredictionsGrayscale',predictions, max_outputs=FLAGS.batch_size))
 
         summaries_every_iter.append(tf.summary.scalar('Loss/CrossEntropyMean',cross_entropy_mean))
         summaries_every_iter.append(tf.summary.scalar('Accuracy/IoU',iou))
@@ -393,12 +475,12 @@ def forward_pass(train_batch_queue, val_batch_queue):
     return cross_entropy_mean, iou, mean_acc, acc, update_confusion_matrix
 
 def get_batch_queue(split_name):
-    dataset = get_dataset(DATASET_DIR, split_name)
+    dataset = get_dataset(FLAGS.data_dir, split_name)
     provider = slim.dataset_data_provider.DatasetDataProvider(
               dataset,
-              num_readers=NUM_READERS,
-              common_queue_capacity=20 * BATCH_SIZE,
-              common_queue_min=10 * BATCH_SIZE)
+              num_readers=FLAGS.num_readers,
+              common_queue_capacity=20 * FLAGS.batch_size,
+              common_queue_min=10 * FLAGS.batch_size)
     [image, label, image_filename] = provider.get(['image', 'label', 'image_filename'])
     print(str(split_name)+'_image: ',image)
     print(str(split_name)+'_label: ',label)
@@ -406,8 +488,8 @@ def get_batch_queue(split_name):
     resized_label = process_labels(label)
     images, labels, image_filename = tf.train.batch(
               [resized_image, resized_label, image_filename],
-              batch_size=BATCH_SIZE,
-              num_threads=NUM_PREPROCESSING_THREADS)
+              batch_size=FLAGS.batch_size,
+              num_threads=FLAGS.num_preprocessing_threads)
     print(str(split_name)+'_resized_image: ',resized_image)
     print(str(split_name)+'_resized_label: ',resized_label)
     print('\n')
@@ -416,12 +498,12 @@ def get_batch_queue(split_name):
     return batch_queue
 
 def weights_initialisers():
-    if USE_LATEST_WEIGHTS:
+    if FLAGS.use_latest_weights:
         restoreAllVars = slim.get_variables_to_restore()
         print(
-            'Ignoring --PRETRAINED_CHECK_POINT because a checkpoint already exists in %s'
-             % MY_PRETRAINED_WEIGHTS)
-        checkpoint_path = MY_PRETRAINED_WEIGHTS
+            'Ignoring --FLAGS.pretrained_check_point because a checkpoint already exists in %s'
+             % FLAGS.my_pretrained_weights)
+        checkpoint_path = FLAGS.my_pretrained_weights
         if tf.gfile.IsDirectory(checkpoint_path):
             checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
         return slim.assign_from_checkpoint_fn(checkpoint_path,restoreAllVars)
@@ -429,7 +511,7 @@ def weights_initialisers():
     newLayerVariables = slim.get_variables_to_restore(include=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17','MobileNet/conv_t2'])
     optimizer_variables = slim.get_variables_to_restore(exclude=['MobileNet'])
 
-    checkpoint_path=PRETRAINED_CHECK_POINT
+    checkpoint_path=FLAGS.pretrained_check_point
 
     print('Checkpoint path: ',checkpoint_path)
     readMobileNetWeights = slim.assign_from_checkpoint_fn(checkpoint_path,restoreVar_mobilenet)
@@ -438,7 +520,7 @@ def weights_initialisers():
     return readMobileNetWeights, otherLayerInitializer, restInitializer
 
 
-if PRINT_INFO:
+if FLAGS.print_info:
             print_info()
 with tf.device('/cpu:0'):
 
@@ -476,11 +558,11 @@ with tf.device('/cpu:0'):
     opt_epsilon = 1.0
 
     global_step = tf.Variable(0, trainable=False,name='global_step')
-    decay_steps = int(NUM_SAMPLES['train'] / BATCH_SIZE * NUM_EPOCHS_PER_DELAY)
-    learning_rate = tf.train.exponential_decay(START_LEARNING_RATE,
+    decay_steps = int(NUM_SAMPLES['train'] / FLAGS.batch_size * FLAGS.num_epochs_per_delay)
+    learning_rate = tf.train.exponential_decay(FLAGS.start_learning_rate,
                                           global_step,
                                           decay_steps,
-                                          LEARNING_RATE_DECAY_FACTOR,
+                                          FLAGS.learning_rate_decay_factor,
                                           staircase=True,
                                           name='exponential_decay_learning_rate')
     summaries_every_iter.append(tf.summary.scalar('TrainingParameters/learning_rate', learning_rate))
@@ -488,10 +570,10 @@ with tf.device('/cpu:0'):
 
 
 with tf.device('/gpu:0'):
-    with tf.variable_scope(OPTIMIZER):
-        if OPTIMIZER =='rmsprop':
+    with tf.variable_scope(FLAGS.optimizer):
+        if FLAGS.optimizer =='rmsprop':
             optimizer = tf.train.RMSPropOptimizer(learning_rate,decay=rmsprop_decay,momentum=rmsprop_momentum,epsilon=opt_epsilon)
-        elif OPTIMIZER == 'sgd':
+        elif FLAGS.optimizer == 'sgd':
             optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         gradients = optimizer.compute_gradients(loss=cross_entropy_mean)
         for grad_var_pair in gradients:
@@ -509,7 +591,7 @@ with tf.device('/gpu:0'):
 
 with tf.device('/cpu:0'):
 
-    if USE_LATEST_WEIGHTS:
+    if FLAGS.use_latest_weights:
         MobileNetAllWeightsFunction = weights_initialisers()
     else:
         MobileNetWeightsFunction, otherLayersInitializer, restInitializer =  weights_initialisers()
@@ -529,9 +611,9 @@ feed_dict_to_use={}
 with tf.Session() as sess:
 
     # with tf.device('/cpu:0'):
-        train_summary_writer = tf.summary.FileWriter(LOGDIR+'train/',graph=sess.graph)
-        val_summary_writer = tf.summary.FileWriter(LOGDIR+'val/')
-        if USE_LATEST_WEIGHTS:
+        train_summary_writer = tf.summary.FileWriter(FLAGS.log_dir+'train/',graph=sess.graph)
+        val_summary_writer = tf.summary.FileWriter(FLAGS.log_dir+'val/')
+        if FLAGS.use_latest_weights:
             MobileNetAllWeightsFunction(sess)
         else:
             MobileNetWeightsFunction(sess)
@@ -542,7 +624,7 @@ with tf.Session() as sess:
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
         try:
-            for itr in range(START_EPOCH,END_EPOCH+1):
+            for itr in range(FLAGS.start_epoch,FLAGS.end_epoch+1):
                 total_cross_entropy = 0.0
                 total_iou = 0.0
                 total_mean_acc = 0.0
@@ -590,14 +672,14 @@ with tf.Session() as sess:
                 print('Epoch: %d Completed... \nCross Entropy Loss: %.5g\t Mean IoU Accuracy: %.5g\t Mean Pixel Accuracy: %.5g\t Pixel Accuracy: %.5g' % (itr,train_mean_cross_entropy,train_mean_iou,train_mean_mean_acc, train_mean_acc))
                 print('**********************************************\n\n')
 
-                saver.save(sess, LOGDIR + "model_coarse.ckpt", itr)
+                saver.save(sess, FLAGS.log_dir + "model_coarse.ckpt", itr)
 
                 ##Validation Step
-                if not DO_VALIDATION:
+                if not FLAGS.do_validaiton:
                     continue
                 if itr % 1 != 0:
                     continue
-                val_summary_img_writer = tf.summary.FileWriter(LOGDIR+'val_images_epoch-'+"%02d" %(itr)+'/')
+                val_summary_img_writer = tf.summary.FileWriter(FLAGS.log_dir+'val_images_epoch-'+"%02d" %(itr)+'/')
                 total_cross_entropy = 0.0
                 total_iou = 0.0
                 total_mean_acc = 0.0
