@@ -26,7 +26,7 @@ tf.app.flags.DEFINE_string(
     'Directory where the data is located.')
 
 tf.app.flags.DEFINE_string(
-    'data_list', 'list/',
+    'data_list', 'list/train_list.txt',
     'Path to file where the image list is stored.')
 
 tf.app.flags.DEFINE_string(
@@ -108,9 +108,6 @@ tf.app.flags.DEFINE_integer('learning_rate_decay_power', 1,
 tf.app.flags.DEFINE_integer('learning_rate_decay_factor', 0.5,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('num_epochs_per_delay', 5,
-                            'Which GPU to use.')
-
 tf.app.flags.DEFINE_integer('weight_decay', 0.5,
                             'Which GPU to use.')
 
@@ -133,25 +130,25 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(FLAGS.gpu)
 
 #Change these files to change the Dataset, 'train_fine.tfRecord' for Fine Dataset / 'train_coarse.tfRecord' for Coarse Dataset and same for val.
 #TODO Settle Fine Coarse
-dataset_filenames = {
-    'train': 'train_fine.tfRecord',
-    'val': 'val_fine.tfRecord'
-}
+# dataset_filenames = {
+#     'train': 'train_fine.tfRecord',
+#     'val': 'val_fine.tfRecord'
+# }
 
 #TODO Settle Fine Coarse Number
 #Number of images in dataset
-NUM_SAMPLES = {
-        'train': 2975,
-        'val': 500,
-}
+# NUM_SAMPLES = {
+#         'train': 2975,
+#         'val': 500,
+# }
 
-_ITEMS_TO_DESCRIPTIONS = {
-            'image_height' : 'height',
-            'image_width' : 'width',
-            'image_filename' : 'filename',
-            'label': 'label',
-            'image': 'A color image of varying height and width',
-}
+# _ITEMS_TO_DESCRIPTIONS = {
+#             'image_height' : 'height',
+#             'image_width' : 'width',
+#             'image_filename' : 'filename',
+#             'label': 'label',
+#             'image': 'A color image of varying height and width',
+# }
 
 summaries_every_iter = []
 summaries_costly = []
@@ -178,14 +175,11 @@ def print_info():
 
 def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scope='MobileNet'):
 
-    image_size = FLAGS.train_image_size
-    weight_decay=FLAGS.weight_decay
     def _depthwise_separable_conv(inputs, num_pwc_filters, width_multiplier, sc, downsample=False):
         num_pwc_filters = round(num_pwc_filters * width_multiplier)
         _stride = 2 if downsample else 1
 
         depthwise_conv = slim.separable_convolution2d(inputs, num_outputs=None, stride=_stride, depth_multiplier=1, kernel_size=[3, 3], scope=sc+'/depthwise_conv')
-
         bn = slim.batch_norm(depthwise_conv, scope=sc+'/dw_batch_norm')
         pointwise_conv = slim.convolution2d(bn, num_pwc_filters, kernel_size=[1, 1], scope=sc+'/pointwise_conv')
         bn = slim.batch_norm(pointwise_conv, scope=sc+'/pw_batch_norm')
@@ -210,11 +204,9 @@ def mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
         bn = slim.batch_norm(pointwise_conv, scope=sc+'/pw_batch_norm')
         return bn
 
-    # arg_scope = mobilenet_arg_scope(weight_decay=weight_decay)
     with slim.arg_scope( [slim.convolution2d, slim.separable_convolution2d],
                                 weights_initializer=slim.initializers.xavier_initializer(),
-                                biases_initializer=slim.init_ops.zeros_initializer(),
-                                weights_regularizer=slim.l2_regularizer(weight_decay)):
+                                biases_initializer=slim.init_ops.zeros_initializer()):
         with tf.variable_scope(scope) as sc:
             with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d], activation_fn=None):
                 with slim.arg_scope([slim.batch_norm], is_training=is_training, activation_fn=tf.nn.relu, fused=False):
@@ -289,19 +281,20 @@ def weights_initialisers():
     if FLAGS.use_latest_weights:
         restoreAllVars = slim.get_variables_to_restore()
         print(
-            'Ignoring --FLAGS.pretrained_check_point because a checkpoint already exists in %s'
-             % FLAGS.my_pretrained_weights)
+            'Ignoring %s because a checkpoint already exists in %s'
+             % (FLAGS.pretrained_check_point, FLAGS.my_pretrained_weights)
         checkpoint_path = FLAGS.my_pretrained_weights
         if tf.gfile.IsDirectory(checkpoint_path):
             checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
         return slim.assign_from_checkpoint_fn(checkpoint_path,restoreAllVars)
+
     restoreVar_mobilenet = slim.get_variables_to_restore(include=['MobileNet'],exclude=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
     newLayerVariables = slim.get_variables_to_restore(include=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
     optimizer_variables = slim.get_variables_to_restore(exclude=['MobileNet'])
 
     checkpoint_path=FLAGS.pretrained_check_point
 
-    print('Checkpoint path: ',checkpoint_path)
+    print('Restoring weights from  %s: ' % (checkpoint_path) )
     readMobileNetWeights = slim.assign_from_checkpoint_fn(checkpoint_path,restoreVar_mobilenet)
     otherLayerInitializer = tf.variables_initializer(newLayerVariables)
     restInitializer = tf.variables_initializer(optimizer_variables)
@@ -320,7 +313,7 @@ def main():
 
     reader = ImageReader(
             FLAGS.data_dir,
-            FLAGS.data_list+'train_list.txt',
+            FLAGS.data_list,
             input_size,
             FLAGS.random_scale,
             FLAGS.random_mirror,
@@ -329,8 +322,6 @@ def main():
             coord)
     image_batch, label_batch = reader.dequeue(FLAGS.batch_size)
 
-    print(image_batch)
-    print(label_batch)
     raw_output = mobilenet(image_batch)
 
     psp_list = ['conv_ds_15a','conv_ds_15b','conv_ds_15c','conv_ds_15d','conv_ds_16','conv_ds_17']
@@ -353,8 +344,9 @@ def main():
 
     # Pixel-wise softmax loss.
     loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=prediction, labels=gt)
-    reduced_loss = tf.reduce_mean(loss)
-    #TODO L2 loss and auxilary loss
+    l2_losses = [FLAGS.weight_decay * tf.nn.l2_loss(v) for v in tf.trainable_variables() if 'weights' in v.name]
+    reduced_loss = tf.reduce_mean(loss) + tf.add_n(l2_losses)
+    #TODO  auxilary loss
 
     #Using Poly learning rate policy
     current_epoch = tf.placeholder(dtype=tf.float32, shape=())
@@ -390,7 +382,12 @@ def main():
     sess = tf.Session(config=config)
     init = tf.global_variables_initializer()
 
+    weight_init = tf.group(weights_initialisers())
+
+
+
     sess.run(init)
+    sess.run(weight_init)
 
     load_step = 0
 
@@ -409,9 +406,7 @@ def main():
         loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
         duration = time.time() - start_time
         print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
-        #print(step)
-	#print(loss_value)
-	#print(duration)
+
 
     coord.request_stop()
     coord.join(threads)
