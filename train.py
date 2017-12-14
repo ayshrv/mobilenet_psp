@@ -113,6 +113,9 @@ tf.app.flags.DEFINE_integer('num_epochs_per_delay', 5,
 tf.app.flags.DEFINE_integer('weight_decay', 0.5,
                             'Which GPU to use.')
 
+tf.app.flags.DEFINE_float('momentum', 0.9,
+                          '')
+
 
 FLAGS = tf.app.flags.FLAGS
 FLAGS.my_pretrained_weights = FLAGS.log_dir
@@ -335,16 +338,7 @@ def main():
     conv_trainable = [v for v in all_trainable if v not in psp_trainable] # lr * 1.0
     psp_w_trainable = [v for v in psp_trainable if 'weights' in v.name] # lr * 10.0
     psp_b_trainable = [v for v in psp_trainable if 'biases' in v.name] # lr * 20.0
-    
-    print('psp_trainable')
-    for i in psp_trainable:
-	print(i)
-    print('psp_w_trainable')
-    for i in psp_w_trainable:
-	print(i)
-    print('psp_b_trainable')
-    for i in psp_b_trainable:
-	print(i)
+
     assert(len(all_trainable) == len(psp_trainable) + len(conv_trainable))
     assert(len(psp_trainable) == len(psp_w_trainable) + len(psp_b_trainable))
 
@@ -358,57 +352,62 @@ def main():
 
     # Pixel-wise softmax loss.
     loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=prediction, labels=gt)
-
+    reduced_loss = loss
     #TODO L2 loss and auxilary loss
 
     #Using Poly learning rate policy
     current_epoch = tf.placeholder(dtype=tf.float32, shape=())
-    tf.train.polynomial_decay(FLAGS.start_learning_rate, current_epoch, FLAGS.decay_steps, end_learning_rate=FLAGS.end_learning_rate, power=FLAGS.learning_rate_decay_power, name="poly_learning_rate")
+    learning_rate = tf.train.polynomial_decay(FLAGS.start_learning_rate, current_epoch, FLAGS.decay_steps, end_learning_rate=FLAGS.end_learning_rate, power=FLAGS.learning_rate_decay_power, name="poly_learning_rate")
 
-    # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    #
-    # with tf.control_dependencies(update_ops):
-    #     opt_conv = tf.train.MomentumOptimizer(learning_rate, args.momentum)
-    #     opt_fc_w = tf.train.MomentumOptimizer(learning_rate * 10.0, args.momentum)
-    #     opt_fc_b = tf.train.MomentumOptimizer(learning_rate * 20.0, args.momentum)
-    #
-    #     grads = tf.gradients(reduced_loss, conv_trainable + fc_w_trainable + fc_b_trainable)
-    #     grads_conv = grads[:len(conv_trainable)]
-    #     grads_fc_w = grads[len(conv_trainable) : (len(conv_trainable) + len(fc_w_trainable))]
-    #     grads_fc_b = grads[(len(conv_trainable) + len(fc_w_trainable)):]
-    #
-    #     train_op_conv = opt_conv.apply_gradients(zip(grads_conv, conv_trainable))
-    #     train_op_fc_w = opt_fc_w.apply_gradients(zip(grads_fc_w, fc_w_trainable))
-    #     train_op_fc_b = opt_fc_b.apply_gradients(zip(grads_fc_b, fc_b_trainable))
-    #
-    #     train_op = tf.group(train_op_conv, train_op_fc_w, train_op_fc_b)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
-    # train_batch_queue = get_batch_queue('train')
-    # val_batch_queue = get_batch_queue('val')
+    with tf.control_dependencies(update_ops):
+        opt_conv = tf.train.MomentumOptimizer(learning_rate, FLAGS.momentum)
+        opt_psp_w = tf.train.MomentumOptimizer(learning_rate * 10.0, FLAGS.momentum)
+        opt_psp_b = tf.train.MomentumOptimizer(learning_rate * 20.0, FLAGS.momentum)
 
+        grads = tf.gradients(reduced_loss, conv_trainable + psp_w_trainable + psp_b_trainable)
+        grads_conv = grads[:len(conv_trainable)]
+        grads_psp_w = grads[len(conv_trainable) : (len(conv_trainable) + len(psp_w_trainable))]
+        grads_psp_b = grads[(len(conv_trainable) + len(psp_w_trainable)):]
 
-    if FLAGS.use_latest_weights:
-        MobileNetAllWeightsFunction = weights_initialisers()
-    else:
-        MobileNetWeightsFunction, otherLayersInitializer, restInitializer =  weights_initialisers()
-    localvariables = tf.initialize_local_variables()
+        train_op_conv = opt_conv.apply_gradients(zip(grads_conv, conv_trainable))
+        train_op_psp_w = opt_psp_w.apply_gradients(zip(grads_psp_w, psp_w_trainable))
+        train_op_psp_b = opt_psp_b.apply_gradients(zip(grads_psp_b, psp_b_trainable))
 
+        train_op = tf.group(train_op_conv, train_op_psp_w, train_op_psp_b)
 
+    # if FLAGS.use_latest_weights:
+    #     MobileNetAllWeightsFunction = weights_initialisers()
+    # else:
+    #     MobileNetWeightsFunction, otherLayersInitializer, restInitializer =  weights_initialisers()
+    # localvariables = tf.initialize_local_variables()
 
-    feed_dict_to_use={}
-    # with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
-    with tf.Session() as sess:
+    # Set up tf session and initialize variables.
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
+    init = tf.global_variables_initializer()
 
-        if FLAGS.use_latest_weights:
-            MobileNetAllWeightsFunction(sess)
-        else:
-            MobileNetWeightsFunction(sess)
-            sess.run(otherLayersInitializer)
-            sess.run(restInitializer)
-        sess.run(localvariables)
-        coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+    sess.run(init)
 
+    load_step = 0
+
+    # Start queue threads.
+    threads = tf.train.start_queue_runners(coord=coord, sess=sess)
+
+# Iterate over training steps.
+    for step in range(1000):
+        start_time = time.time()
+
+        feed_dict = {current_epoch: 1}
+        # if step % args.save_pred_every == 0:
+            # loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
+            # save(saver, sess, args.snapshot_dir, step)
+        # else:
+        loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
+        duration = time.time() - start_time
+        print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
 
     coord.request_stop()
     coord.join(threads)
