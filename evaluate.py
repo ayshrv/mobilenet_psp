@@ -37,13 +37,13 @@ tf.app.flags.DEFINE_boolean('flipped-eval', True,
 tf.app.flags.DEFINE_integer('gpu', 0,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_boolean('print_architecture', False,
+tf.app.flags.DEFINE_boolean('print_architecture', True,
                             'Print architecure.')
 
-tf.app.flags.DEFINE_integer('image_width', 2048,
+tf.app.flags.DEFINE_integer('image_width', 713,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('image_height', 1024,
+tf.app.flags.DEFINE_integer('image_height', 713,
                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_integer('num_steps', 500,
@@ -184,6 +184,7 @@ def main():
 
     image_batch, label_batch = tf.expand_dims(image, dim=0), tf.expand_dims(label, dim=0) # Add one batch dimension.
 
+    print(image_batch)
     net = mobilenet(image_batch, is_training = False)
     #TODO Add flipped eval
 
