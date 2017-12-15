@@ -20,7 +20,7 @@ tf.app.flags.DEFINE_string(
     'Directory where the data is located.')
 
 tf.app.flags.DEFINE_string(
-    'data_list', 'list/val_list.txt',
+    'data_list', 'list/eval_list.txt',
     'Path to file where the image list is stored.')
 
 tf.app.flags.DEFINE_string(
@@ -169,7 +169,7 @@ def main():
     coord = tf.train.Coordinator()
     tf.reset_default_graph()
 
-    input_size = [FLAGS.image_width, FLAGS.image_height]
+    input_size = [FLAGS.image_height, FLAGS.image_width]
 
     reader = ImageReader(
             FLAGS.data_dir,
@@ -191,9 +191,7 @@ def main():
     restore_var = tf.global_variables()
 
     raw_output = net
-def load(saver, sess, ckpt_path):
-    saver.restore(sess, ckpt_path)
-    print("Restored model parameters from {}".format(ckpt_path))
+
     raw_output_up = tf.image.resize_bilinear(raw_output, size=input_size, align_corners=True)
     raw_output_up = tf.argmax(raw_output_up, dimension=3)
     pred = tf.expand_dims(raw_output_up, dim=3)
