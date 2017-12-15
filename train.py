@@ -87,6 +87,9 @@ tf.app.flags.DEFINE_integer('train_image_size', 713,
 tf.app.flags.DEFINE_integer('num_epochs', 50,
                             'Which GPU to use.')
 
+tf.app.flags.DEFINE_integer('num_steps', 2975,
+                            'No. of images in train dataset')
+
 # tf.app.flags.DEFINE_integer('end_epoch', 200,
 #                             'Which GPU to use.')
 
@@ -398,9 +401,10 @@ def main():
     threads = tf.train.start_queue_runners(coord=coord, sess=sess)
 
     # Iterate over training steps.
-    for epoch in range(1, FLAGS.num_epochs):
+    for epoch in range(1, FLAGS.num_epochs+1):
 
-        for step in range(1,2975+1):
+        total_loss = 0.0
+        for step in range(1,FLAGS.num_steps+1):
 
             start_time = time.time()
 
@@ -410,9 +414,13 @@ def main():
             duration = time.time() - start_time
             print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
 
+            total_loss += loss
             # if step % args.save_pred_every == 0:
                 # loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
         save(saver, sess, FLAGS.log_dir, epoch)
+        total_loss /= FLAGS.num_steps
+        print('Epoch {:d} completed! Total Loss = {:.3f}'.format(epoch, total_loss))
+
             # else:
 
 
