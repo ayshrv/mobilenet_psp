@@ -1,7 +1,6 @@
 - [x] Regularisation loss
 - [ ] Dropout
 - [ ] Data Augmentation
-- [ ] Weight init from between
 
 
 - [ ] initializers for all layers beta gamma. is_training???

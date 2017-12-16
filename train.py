@@ -9,13 +9,6 @@ from mobilenet import MobileNet
 
 import time
 import os
-# import os.path as osp
-# import sys
-# import datetime
-# from PIL import Image
-# np.set_printoptions(threshold=np.nan)
-# from scipy import misc
-# import matplotlib.pyplot as plt
 
 slim = tf.contrib.slim
 
@@ -44,34 +37,8 @@ tf.app.flags.DEFINE_boolean('random_mirror', True,
 tf.app.flags.DEFINE_integer('ignore_label', 255,
                             'The index of the label to ignore during the training.')
 
-
 tf.app.flags.DEFINE_integer('gpu', 0,
                             'Which GPU to use.')
-
-
-# tf.app.flags.DEFINE_boolean('print_architecture', True,
-#                             'Print architecure.')
-
-# tf.app.flags.DEFINE_boolean('print_info', False,
-#                             'Print info.')
-
-# tf.app.flags.DEFINE_boolean('do_validaiton', True,
-#                             'Perform validation')
-
-# tf.app.flags.DEFINE_boolean('use_latest_weights', False,
-#                             'Use latest weights.')
-
-# tf.app.flags.DEFINE_integer('image_width', 2048,
-#                             'Which GPU to use.')
-
-# tf.app.flags.DEFINE_integer('image_height', 1024,
-#                             'Which GPU to use.')
-
-# tf.app.flags.DEFINE_integer('num_readers', 8,
-#                             'Which GPU to use.')
-
-# tf.app.flags.DEFINE_integer('num_preprocessing_threads', 8,
-#                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_integer('batch_size', 1,
                             'Which GPU to use.')
@@ -88,12 +55,6 @@ tf.app.flags.DEFINE_integer('num_epochs', 50,
 tf.app.flags.DEFINE_integer('num_steps', 2975,
                             'No. of images in train dataset')
 
-# tf.app.flags.DEFINE_integer('end_epoch', 200,
-#                             'Which GPU to use.')
-
-# tf.app.flags.DEFINE_string('optimizer', 'sgd',
-#                             'Which GPU to use.')
-
 tf.app.flags.DEFINE_integer('start_learning_rate', 0.001,
                             'Which GPU to use.')
 
@@ -106,72 +67,20 @@ tf.app.flags.DEFINE_integer('decay_steps', 20,
 tf.app.flags.DEFINE_integer('learning_rate_decay_power', 1,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('learning_rate_decay_factor', 0.5,
-                            'Which GPU to use.')
-
 tf.app.flags.DEFINE_integer('weight_decay', 0.5,
                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_float('momentum', 0.9,
                           '')
 
-
 FLAGS = tf.app.flags.FLAGS
-FLAGS.my_pretrained_weights = FLAGS.log_dir
-# FLAGS.num_epochs = FLAGS.end_epoch - FLAGS.start_epoch + 1
 
 IMG_MEAN = np.array((103.939, 116.779, 123.68), dtype=np.float32)
-
-# sys.path.insert(0, FLAGS.data_dir+'cityscapesScripts/cityscapesscripts/helpers')
-# from labels import id2label, trainId2label
 
 #Set Visible CUDA Devices
 os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(FLAGS.gpu)
 
 
-#Change these files to change the Dataset, 'train_fine.tfRecord' for Fine Dataset / 'train_coarse.tfRecord' for Coarse Dataset and same for val.
-#TODO Settle Fine Coarse
-# dataset_filenames = {
-#     'train': 'train_fine.tfRecord',
-#     'val': 'val_fine.tfRecord'
-# }
-
-#TODO Settle Fine Coarse Number
-#Number of images in dataset
-# NUM_SAMPLES = {
-#         'train': 2975,
-#         'val': 500,
-# }
-
-# _ITEMS_TO_DESCRIPTIONS = {
-#             'image_height' : 'height',
-#             'image_width' : 'width',
-#             'image_filename' : 'filename',
-#             'label': 'label',
-#             'image': 'A color image of varying height and width',
-# }
-
-# summaries_every_iter = []
-# summaries_costly = []
-# summaries_images = []
-# summaries_images_val=[]
-# TrainStep = tf.placeholder(tf.bool)
-# train_mean_loss_summary = []
-# val_mean_loss_summary = []
-
-# def print_info():
-#     print('Start Epoch: %d' % (FLAGS.start_epoch))
-#     print('End Epoch: %d' % (FLAGS.end_epoch))
-#     print('No. Of Epochs: %d' % (FLAGS.num_epochs))
-#     print('Total Running Steps: %d\n' % (FLAGS.num_epochs*NUM_SAMPLES['train']))
-#     print('Batch Size: %d' % (FLAGS.batch_size))
-#     print('Train Image Size: %d' % (FLAGS.train_image_size))
-#     print('No. Of Classes: %d\n' % (FLAGS.num_classes))
-#     print('Optimizer: %s' % (FLAGS.optimizer))
-#     print('Start learning Rate: %f' % (FLAGS.start_learning_rate))
-#     print('End learning Rate: ')
-#     print('Learning Rate Decay Factor: %f' % (FLAGS.learning_rate_decay_factor))
-#     print('Decay Learning Rate After %d Epoch\n' % (FLAGS.num_epochs_per_delay))
 
 def load(sess, DIR, restore_var):
     ckpt = tf.train.get_checkpoint_state(DIR)
@@ -193,8 +102,8 @@ def save(saver, sess, logdir, step):
 
 def main():
 
-    # if FLAGS.print_info:
-    #     print_info()
+    for params, value in FLAGS.__flags.items():
+        print('{}: {}'.format(params,value))
 
     input_size = (FLAGS.train_image_size, FLAGS.train_image_size)
 
@@ -222,8 +131,6 @@ def main():
     conv_trainable = [v for v in all_trainable if v not in psp_trainable] # lr * 1.0
     psp_w_trainable = [v for v in psp_trainable if 'weights' in v.name] # lr * 10.0
     psp_b_trainable = [v for v in psp_trainable if 'biases' in v.name] # lr * 20.0
-
-    # restore_var = [v for v in all_trainable if (v.name.split('/')[1] not in psp_list and 'Momentum' not in v.name)]
 
     assert(len(all_trainable) == len(psp_trainable) + len(conv_trainable))
     assert(len(psp_trainable) == len(psp_w_trainable) + len(psp_b_trainable))
@@ -293,16 +200,11 @@ def main():
 
             duration = time.time() - start_time
             print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
+            total_loss += loss_value
 
-            total_loss += loss
-            # if step % args.save_pred_every == 0:
-                # loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
         save(saver, sess, FLAGS.log_dir, epoch)
         total_loss /= FLAGS.num_steps
         print('Epoch {:d} completed! Total Loss = {:.3f}'.format(epoch, total_loss))
-
-            # else:
-
 
     coord.request_stop()
     coord.join(threads)
