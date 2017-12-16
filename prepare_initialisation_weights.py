@@ -15,7 +15,7 @@ tf.app.flags.DEFINE_string(
 
 tf.app.flags.DEFINE_string(
     'save_model', 'MobileNetPSP',
-    'Directory where pretrained mobilenet weights are located.')
+    'Directory where weights are to be saved')
 
 tf.app.flags.DEFINE_boolean('print_architecture', True,
                             'Print architecure.')

@@ -5,18 +5,17 @@ import tensorflow as tf
 
 from image_reader import ImageReader
 from tools import decode_labels, prepare_label
-from mobilenet import mobilenet
+from mobilenet import MobileNet
 
 import time
 import os
-import os.path as osp
-import sys
-import datetime
-from PIL import Image
-import numpy as np
-np.set_printoptions(threshold=np.nan)
-from scipy import misc
-import matplotlib.pyplot as plt
+# import os.path as osp
+# import sys
+# import datetime
+# from PIL import Image
+# np.set_printoptions(threshold=np.nan)
+# from scipy import misc
+# import matplotlib.pyplot as plt
 
 slim = tf.contrib.slim
 
@@ -29,11 +28,11 @@ tf.app.flags.DEFINE_string(
     'Path to file where the image list is stored.')
 
 tf.app.flags.DEFINE_string(
-    'log_dir', 'logs/train1_FINE-FULL-SGD/',
+    'log_dir', 'logs/train1-Fine-Full-Momentum/',
     'Directory where the data is located.')
 
 tf.app.flags.DEFINE_string(
-    'pretrained_check_point', 'MobileNetPreTrained/model.ckpt-906808',
+    'pretrained_checkpoint', 'MobileNetPSP/',
     'Directory where the data is located.')
 
 tf.app.flags.DEFINE_boolean('random_scale', False,
@@ -50,29 +49,29 @@ tf.app.flags.DEFINE_integer('gpu', 0,
                             'Which GPU to use.')
 
 
-tf.app.flags.DEFINE_boolean('print_architecture', True,
-                            'Print architecure.')
+# tf.app.flags.DEFINE_boolean('print_architecture', True,
+#                             'Print architecure.')
 
-tf.app.flags.DEFINE_boolean('print_info', False,
-                            'Print info.')
+# tf.app.flags.DEFINE_boolean('print_info', False,
+#                             'Print info.')
 
-tf.app.flags.DEFINE_boolean('do_validaiton', True,
-                            'Perform validation')
+# tf.app.flags.DEFINE_boolean('do_validaiton', True,
+#                             'Perform validation')
 
-tf.app.flags.DEFINE_boolean('use_latest_weights', False,
-                            'Use latest weights.')
+# tf.app.flags.DEFINE_boolean('use_latest_weights', False,
+#                             'Use latest weights.')
 
-tf.app.flags.DEFINE_integer('image_width', 2048,
-                            'Which GPU to use.')
+# tf.app.flags.DEFINE_integer('image_width', 2048,
+#                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('image_height', 1024,
-                            'Which GPU to use.')
+# tf.app.flags.DEFINE_integer('image_height', 1024,
+#                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('num_readers', 8,
-                            'Which GPU to use.')
+# tf.app.flags.DEFINE_integer('num_readers', 8,
+#                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('num_preprocessing_threads', 8,
-                            'Which GPU to use.')
+# tf.app.flags.DEFINE_integer('num_preprocessing_threads', 8,
+#                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_integer('batch_size', 1,
                             'Which GPU to use.')
@@ -92,8 +91,8 @@ tf.app.flags.DEFINE_integer('num_steps', 2975,
 # tf.app.flags.DEFINE_integer('end_epoch', 200,
 #                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_string('optimizer', 'sgd',
-                            'Which GPU to use.')
+# tf.app.flags.DEFINE_string('optimizer', 'sgd',
+#                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_integer('start_learning_rate', 0.001,
                             'Which GPU to use.')
@@ -123,8 +122,8 @@ FLAGS.my_pretrained_weights = FLAGS.log_dir
 
 IMG_MEAN = np.array((103.939, 116.779, 123.68), dtype=np.float32)
 
-sys.path.insert(0, FLAGS.data_dir+'cityscapesScripts/cityscapesscripts/helpers')
-from labels import id2label, trainId2label
+# sys.path.insert(0, FLAGS.data_dir+'cityscapesScripts/cityscapesscripts/helpers')
+# from labels import id2label, trainId2label
 
 #Set Visible CUDA Devices
 os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(FLAGS.gpu)
@@ -152,56 +151,40 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(FLAGS.gpu)
 #             'image': 'A color image of varying height and width',
 # }
 
-summaries_every_iter = []
-summaries_costly = []
-summaries_images = []
-summaries_images_val=[]
-TrainStep = tf.placeholder(tf.bool)
-train_mean_loss_summary = []
-val_mean_loss_summary = []
+# summaries_every_iter = []
+# summaries_costly = []
+# summaries_images = []
+# summaries_images_val=[]
+# TrainStep = tf.placeholder(tf.bool)
+# train_mean_loss_summary = []
+# val_mean_loss_summary = []
 
-def print_info():
-    print('Start Epoch: %d' % (FLAGS.start_epoch))
-    print('End Epoch: %d' % (FLAGS.end_epoch))
-    print('No. Of Epochs: %d' % (FLAGS.num_epochs))
-    print('Total Running Steps: %d\n' % (FLAGS.num_epochs*NUM_SAMPLES['train']))
-    print('Batch Size: %d' % (FLAGS.batch_size))
-    print('Train Image Size: %d' % (FLAGS.train_image_size))
-    print('No. Of Classes: %d\n' % (FLAGS.num_classes))
-    print('Optimizer: %s' % (FLAGS.optimizer))
-    print('Start learning Rate: %f' % (FLAGS.start_learning_rate))
-    print('End learning Rate: ')
-    print('Learning Rate Decay Factor: %f' % (FLAGS.learning_rate_decay_factor))
-    print('Decay Learning Rate After %d Epoch\n' % (FLAGS.num_epochs_per_delay))
+# def print_info():
+#     print('Start Epoch: %d' % (FLAGS.start_epoch))
+#     print('End Epoch: %d' % (FLAGS.end_epoch))
+#     print('No. Of Epochs: %d' % (FLAGS.num_epochs))
+#     print('Total Running Steps: %d\n' % (FLAGS.num_epochs*NUM_SAMPLES['train']))
+#     print('Batch Size: %d' % (FLAGS.batch_size))
+#     print('Train Image Size: %d' % (FLAGS.train_image_size))
+#     print('No. Of Classes: %d\n' % (FLAGS.num_classes))
+#     print('Optimizer: %s' % (FLAGS.optimizer))
+#     print('Start learning Rate: %f' % (FLAGS.start_learning_rate))
+#     print('End learning Rate: ')
+#     print('Learning Rate Decay Factor: %f' % (FLAGS.learning_rate_decay_factor))
+#     print('Decay Learning Rate After %d Epoch\n' % (FLAGS.num_epochs_per_delay))
 
-
-def weights_initialisers():
-    # if FLAGS.use_latest_weights:
-    #     restoreAllVars = slim.get_variables_to_restore()
-    #     print(
-    #         'Ignoring %s because a checkpoint already exists in %s'
-    #          % (FLAGS.pretrained_check_point, FLAGS.my_pretrained_weights) )
-    #     checkpoint_path = FLAGS.my_pretrained_weights
-    #     if tf.gfile.IsDirectory(checkpoint_path):
-    #         checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
-    #     return slim.assign_from_checkpoint_fn(checkpoint_path,restoreAllVars)
-
-    restoreVar_mobilenet = slim.get_variables_to_restore(include=['MobileNet'],exclude=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
-    restoreVar_mobilenet = [v for v in restoreVar_mobilenet if 'Momentum' not in v.name]
-    newLayerVariables = slim.get_variables_to_restore(include=['MobileNet/conv_ds_15a','MobileNet/conv_ds_15b','MobileNet/conv_ds_15c','MobileNet/conv_ds_15d','MobileNet/conv_ds_16','MobileNet/conv_ds_17'])
-    optimizer_variables = slim.get_variables_to_restore(exclude=['MobileNet'])
-
-    checkpoint_path=FLAGS.pretrained_check_point
-
-    print('Restoring weights from  %s: ' % (checkpoint_path) )
-    readMobileNetWeights = slim.assign_from_checkpoint_fn(checkpoint_path,restoreVar_mobilenet)
-    otherLayerInitializer = tf.variables_initializer(newLayerVariables)
-    restInitializer = tf.variables_initializer(optimizer_variables)
-    return readMobileNetWeights, otherLayerInitializer, restInitializer
+def load(sess, DIR, restore_var):
+    ckpt = tf.train.get_checkpoint_state(DIR)
+    if ckpt and ckpt.model_checkpoint_path:
+        loader = tf.train.Saver(var_list=restore_var)
+        loader.restore(sess, ckpt.model_checkpoint_path)
+        print("Restored model parameters from {}".format(ckpt.model_checkpoint_path))
+    else:
+        print('No checkpoint file found.')
 
 def save(saver, sess, logdir, step):
    model_name = 'model.ckpt'
-   checkpoint_path = os.path.join(logdir, model_name)
+   checkpoint_path = os.path.join(logdir, 'checkpoints', model_name)
 
    if not os.path.exists(logdir):
       os.makedirs(logdir)
@@ -210,8 +193,8 @@ def save(saver, sess, logdir, step):
 
 def main():
 
-    if FLAGS.print_info:
-        print_info()
+    # if FLAGS.print_info:
+    #     print_info()
 
     input_size = (FLAGS.train_image_size, FLAGS.train_image_size)
 
@@ -230,8 +213,9 @@ def main():
             coord)
     image_batch, label_batch = reader.dequeue(FLAGS.batch_size)
 
-    raw_output = Mobilenet(image_batch)
+    raw_output = MobileNet(image_batch)
 
+    restore_var = [v for v in tf.global_variables()]
     psp_list = ['conv_ds_15a','conv_ds_15b','conv_ds_15c','conv_ds_15d','conv_ds_16','conv_ds_17']
     all_trainable = [v for v in tf.trainable_variables()]
     psp_trainable = [v for v in all_trainable if v.name.split('/')[1] in psp_list and ('weights' in v.name or 'biases' in v.name)]
@@ -239,7 +223,7 @@ def main():
     psp_w_trainable = [v for v in psp_trainable if 'weights' in v.name] # lr * 10.0
     psp_b_trainable = [v for v in psp_trainable if 'biases' in v.name] # lr * 20.0
 
-    restore_var = [v for v in all_trainable if (v.name.split('/')[1] not in psp_list and 'Momentum' not in v.name)]
+    # restore_var = [v for v in all_trainable if (v.name.split('/')[1] not in psp_list and 'Momentum' not in v.name)]
 
     assert(len(all_trainable) == len(psp_trainable) + len(conv_trainable))
     assert(len(psp_trainable) == len(psp_w_trainable) + len(psp_b_trainable))
@@ -289,10 +273,9 @@ def main():
     sess.run(init)
 
     # Saver for storing checkpoints of the model.
-    saver = tf.train.Saver(var_list=tf.global_variables(), max_to_keep=100)
+    saver = tf.train.Saver(var_list=tf.global_variables(), max_to_keep=500)
 
-    loader = tf.train.Saver(var_list=restore_var)
-    loader.restore(sess, FLAGS.pretrained_check_point)
+    load(sess, FLAGS.pretrained_checkpoint, restore_var)
 
     # Start queue threads.
     threads = tf.train.start_queue_runners(coord=coord, sess=sess)
