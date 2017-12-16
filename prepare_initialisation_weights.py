@@ -97,3 +97,6 @@ def main():
         # Saver for converting the loaded weights into .ckpt.
         saver = tf.train.Saver(var_list=var_list)
         save(saver, sess, FLAGS.save_model)
+
+if __name__ == '__main__':
+    main()
