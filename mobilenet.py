@@ -1,7 +1,7 @@
 import tensorflow as tf
 slim = tf.contrib.slim
 
-def Mobilenet(inputs, num_classes=19, is_training=True, width_multiplier=1, scope='MobileNet', print_architecture=False):
+def MobileNet(inputs, num_classes=19, is_training=True, width_multiplier=1, scope='MobileNet', print_architecture=False):
 
     def _depthwise_separable_conv(inputs, num_pwc_filters, width_multiplier, sc, downsample=False):
         num_pwc_filters = round(num_pwc_filters * width_multiplier)
