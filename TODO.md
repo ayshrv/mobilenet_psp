@@ -11,3 +11,14 @@
 - [ ] Remove Segmentation Faults
 - [ ] Configure Training Parameters
 - [ ] Analyse Image Reader
+
+
+
+
+
+NOTHING IS WORKING LIST:
+- [x] Check whether image and label are loaded correctly.
+    - [ ] Do not know about image scaling
+- [ ] Check whether pre trained weight loading is correct.
+- [ ] Check whether weight initialization is correct.
+- [ ] Check training is correct or NOTHING
