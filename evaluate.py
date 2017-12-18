@@ -21,7 +21,7 @@ tf.app.flags.DEFINE_string(
     'Directory where the data is located.')
 
 tf.app.flags.DEFINE_string(
-    'data_list', '/home/n1703300e/SS/mobilenet_psp/list/eval_list.txt',
+    'data_list', 'list/eval_list.txt',
     'Path to file where the image list is stored.')
 
 tf.app.flags.DEFINE_string(
@@ -35,7 +35,7 @@ tf.app.flags.DEFINE_string(
 tf.app.flags.DEFINE_boolean('flipped-eval', True,
                             'whether to evaluate with flipped img.')
 
-tf.app.flags.DEFINE_boolean('print_each_step', False,
+tf.app.flags.DEFINE_boolean('print_each_step', True,
                             'whether to print after eah step')
 
 tf.app.flags.DEFINE_integer('gpu', 0,
@@ -145,7 +145,7 @@ def main():
         # if step > 0 and FLAGS.measure_time:
         #     calculate_time(sess, net)
 
-        if FLAGS.print_each_step and step % 10 == 0:
+        if FLAGS.print_each_step and step % 100 == 0:
             print('Finish {0}/{1}'.format(step, FLAGS.num_steps))
             print('step {0} mIoU: {1}'.format(step, sess.run(mIoU)))
 
