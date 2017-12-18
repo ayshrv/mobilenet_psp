@@ -152,7 +152,7 @@ def main():
     value = sess.run(mIoU)
     print('step {0} mIoU: {1}'.format(step, value))
 
-    epoch = int(os.path.basename(q).split('-')[1])
+    epoch = int(os.path.basename(FLAGS.checkpoint_path).split('-')[1])
     writeToLogFile(epoch,value)
 
     coord.request_stop()
