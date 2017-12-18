@@ -21,7 +21,7 @@ tf.app.flags.DEFINE_string(
     'Directory where the data is located.')
 
 tf.app.flags.DEFINE_string(
-    'data_list', 'list/eval_list.txt',
+    'data_list', '/home/n1703300e/SS/mobilenet_psp/list/eval_list.txt',
     'Path to file where the image list is stored.')
 
 tf.app.flags.DEFINE_string(
@@ -35,7 +35,7 @@ tf.app.flags.DEFINE_string(
 tf.app.flags.DEFINE_boolean('flipped-eval', True,
                             'whether to evaluate with flipped img.')
 
-tf.app.flags.DEFINE_boolean('print_each_step', True,
+tf.app.flags.DEFINE_boolean('print_each_step', False,
                             'whether to print after eah step')
 
 tf.app.flags.DEFINE_integer('gpu', 0,
