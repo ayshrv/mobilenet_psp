@@ -53,6 +53,10 @@ tf.app.flags.DEFINE_integer('image_height', 713,
 tf.app.flags.DEFINE_integer('num_steps', 500,
                             'No. of images in val dataset')
 
+tf.app.flags.DEFINE_string(
+    'evaluate_log_file', 'evaluate.log',
+    'File where the results are appended.')
+
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -66,6 +70,13 @@ def load(sess, file, restore_var):
     loader = tf.train.Saver(var_list=restore_var)
     loader.restore(sess, file)
     print("Restored model parameters from {}".format(file))
+
+def writeToLogFile(epoch,mIoU):
+    file = open(FLAGS.evaluate_log_file, 'a')
+    s = 'Epoch {0}: {1} mIoU\n'.format(epoch, mIoU)
+    file.write(s)
+    file.close()
+
 
 def main():
 
@@ -138,7 +149,11 @@ def main():
             print('Finish {0}/{1}'.format(step, FLAGS.num_steps))
             print('step {0} mIoU: {1}'.format(step, sess.run(mIoU)))
 
-    print('step {0} mIoU: {1}'.format(step, sess.run(mIoU)))
+    value = sess.run(mIoU)
+    print('step {0} mIoU: {1}'.format(step, value))
+
+    epoch = int(os.path.basename(q).split('-')[1])
+    writeToLogFile(epoch,value)
 
     coord.request_stop()
     coord.join(threads)
