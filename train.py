@@ -67,7 +67,7 @@ tf.app.flags.DEFINE_integer('decay_steps', 40,
 tf.app.flags.DEFINE_integer('learning_rate_decay_power', 1,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('weight_decay', 0.0001,
+tf.app.flags.DEFINE_integer('weight_decay', 0.00001,
                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_float('momentum', 0.9,
