@@ -12,6 +12,7 @@ import os
 
 slim = tf.contrib.slim
 
+#Directory Papths
 tf.app.flags.DEFINE_string(
     'data_dir', '/home/n1703300e/SS/Datasets/cityscapes-images/',
     'Directory where the data is located.')
@@ -67,11 +68,26 @@ tf.app.flags.DEFINE_integer('decay_steps', 40,
 tf.app.flags.DEFINE_integer('learning_rate_decay_power', 1,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('weight_decay', 0.00001,
-                            'Which GPU to use.')
+tf.app.flags.DEFINE_string('optimizer', 'momentum',
+                            'momentum/rmsprop')
 
 tf.app.flags.DEFINE_float('momentum', 0.9,
-                          '')
+                          'momentum for Momentum Optimizer')
+
+tf.app.flags.DEFINE_float('rmsprop_decay', 0.9,
+                          'Decay term for RMSProp.')
+
+tf.app.flags.DEFINE_float('rmsprop_momentum', 0.9,
+                          'momentum for RMSProp Optimizer')
+
+tf.app.flags.DEFINE_float('opt_epsilon', 1.0,
+                          'Epsilon term for the optimizer.')
+
+
+tf.app.flags.DEFINE_integer('weight_decay', 0.00001,
+                            'Regularisation Parameter.')
+
+
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -135,7 +151,7 @@ def main():
     assert(len(all_trainable) == len(psp_trainable) + len(conv_trainable))
     assert(len(psp_trainable) == len(psp_w_trainable) + len(psp_b_trainable))
 
-    # Predictions: ignoring all pall_trainable = [v for v in tf.trainable_variables()]redictions with labels greater or equal than n_classes
+    # Predictions: ignoring all predictions with labels greater or equal than n_classes
     raw_prediction = tf.reshape(raw_output, [-1, FLAGS.num_classes])
     label_proc = prepare_label(label_batch, tf.stack(raw_output.get_shape()[1:3]), num_classes=FLAGS.num_classes, one_hot=False) # [batch_size, h, w]
     raw_gt = tf.reshape(label_proc, [-1,])
@@ -156,9 +172,14 @@ def main():
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
     with tf.control_dependencies(update_ops):
-        opt_conv = tf.train.MomentumOptimizer(learning_rate, FLAGS.momentum)
-        opt_psp_w = tf.train.MomentumOptimizer(learning_rate * 10.0, FLAGS.momentum)
-        opt_psp_b = tf.train.MomentumOptimizer(learning_rate * 20.0, FLAGS.momentum)
+        if FLAGS.optimizer == 'momentum'
+            opt_conv = tf.train.MomentumOptimizer(learning_rate, FLAGS.momentum)
+            opt_psp_w = tf.train.MomentumOptimizer(learning_rate * 10.0, FLAGS.momentum)
+            opt_psp_b = tf.train.MomentumOptimizer(learning_rate * 20.0, FLAGS.momentum)
+        elif FLAGS.optimizer == 'rmsprop'
+            opt_conv = tf.train.RMSPropOptimizer(learning_rate, decay=FLAGS.rmsprop_decay, momentum=FLAGS.rmsprop_momentum, epsilon=FLAGS.opt_epsilon)
+            opt_psp_w = tf.train.RMSPropOptimizer(learning_rate * 10.0, decay=FLAGS.rmsprop_decay, momentum=FLAGS.rmsprop_momentum, epsilon=FLAGS.opt_epsilon)
+            opt_psp_b = tf.train.RMSPropOptimizer(learning_rate * 20.0, decay=FLAGS.rmsprop_decay, momentum=FLAGS.rmsprop_momentum, epsilon=FLAGS.opt_epsilon)
 
         grads = tf.gradients(reduced_loss, conv_trainable + psp_w_trainable + psp_b_trainable)
         grads_conv = grads[:len(conv_trainable)]
