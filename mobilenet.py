@@ -97,7 +97,7 @@ def MobileNet(inputs, num_classes=19, isTraining=True, updateBeta=True, width_mu
 
                     net = _depthwise_separable_convPSP(fuse_15, [3,3], 1, 256, width_multiplier, sc='conv_ds_16')
                     if print_architecture: print('after conv_ds_16: ',net)
-                    net = slim.dropout(net, keep_prob=0.9, isTraining)
+                    net = slim.dropout(net, keep_prob=0.9, is_training=isTraining)
                     net = _depthwise_separable_convPSP(net, [3,3], 1, 19, width_multiplier, sc='conv_ds_17')
                     if print_architecture: print('after conv_ds_17: ',net)
 
