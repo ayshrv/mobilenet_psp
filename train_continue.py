@@ -29,7 +29,7 @@ tf.app.flags.DEFINE_string(
     'pretrained_checkpoint', '',
     'Directory where the data is located.')
 
-tf.app.flags.DEFINE_boolean('random_scale', False,
+tf.app.flags.DEFINE_boolean('random_scale', True,
                             'Whether to randomly scale the inputs during the training.')
 
 tf.app.flags.DEFINE_boolean('random_mirror', True,
@@ -62,7 +62,7 @@ tf.app.flags.DEFINE_integer('start_epoch', None,
 tf.app.flags.DEFINE_integer('start_learning_rate', 0.01,
                             'Which GPU to use.')
 
-tf.app.flags.DEFINE_integer('end_learning_rate', 0.00001,
+tf.app.flags.DEFINE_integer('end_learning_rate', 0.0001,
                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_integer('decay_steps', 40,
@@ -87,11 +87,14 @@ tf.app.flags.DEFINE_float('opt_epsilon', 1.0,
                           'Epsilon term for the optimizer.')
 
 
-tf.app.flags.DEFINE_integer('weight_decay', 0.00001,
+tf.app.flags.DEFINE_integer('weight_decay', 0.00004,
                             'Regularisation Parameter.')
 
 tf.app.flags.DEFINE_boolean('update_beta', True,
                             'Train without changing beta of batch norm layer.')
+
+tf.app.flags.DEFINE_boolean('update_mean_var', True,
+                            'whether to get update_op from tf.Graphic_Key.')
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -170,7 +173,10 @@ def main():
     current_epoch = tf.placeholder(dtype=tf.float32, shape=())
     learning_rate = tf.train.polynomial_decay(FLAGS.start_learning_rate, current_epoch, FLAGS.decay_steps, end_learning_rate=FLAGS.end_learning_rate, power=FLAGS.learning_rate_decay_power, name="poly_learning_rate")
 
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    if FLAGS.update_mean_var == False:
+        update_ops = None
+    else:
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
     with tf.control_dependencies(update_ops):
         if FLAGS.optimizer == 'momentum':
