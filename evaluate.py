@@ -80,6 +80,8 @@ def writeToLogFile(epoch,mIoU):
 
 def main():
 
+    temp_flags = FLAGS.__flags.items()
+    temp_flags.sort()
     for params, value in FLAGS.__flags.items():
         print('{}: {}'.format(params,value))
 
