@@ -87,7 +87,8 @@ tf.app.flags.DEFINE_float('opt_epsilon', 1.0,
 tf.app.flags.DEFINE_integer('weight_decay', 0.00001,
                             'Regularisation Parameter.')
 
-
+tf.app.flags.DEFINE_boolean('update_beta', True,
+                            'Train without changing beta of batch norm layer.')
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -143,6 +144,8 @@ def main():
     restore_var = [v for v in tf.global_variables()]
     psp_list = ['conv_ds_15a','conv_ds_15b','conv_ds_15c','conv_ds_15d','conv_ds_16','conv_ds_17']
     all_trainable = [v for v in tf.trainable_variables()]
+    if FLAGS.update_beta == False:
+        all_trainable = [v for v in all_trainable if 'beta' not in v.name]
     psp_trainable = [v for v in all_trainable if v.name.split('/')[1] in psp_list and ('weights' in v.name or 'biases' in v.name)]
     conv_trainable = [v for v in all_trainable if v not in psp_trainable] # lr * 1.0
     psp_w_trainable = [v for v in psp_trainable if 'weights' in v.name] # lr * 10.0

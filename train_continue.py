@@ -93,8 +93,6 @@ tf.app.flags.DEFINE_integer('weight_decay', 0.00001,
 tf.app.flags.DEFINE_boolean('update_beta', True,
                             'Train without changing beta of batch norm layer.')
 
-
-
 FLAGS = tf.app.flags.FLAGS
 
 IMG_MEAN = np.array((103.939, 116.779, 123.68), dtype=np.float32)
