@@ -139,7 +139,7 @@ def main():
             coord)
     image_batch, label_batch = reader.dequeue(FLAGS.batch_size)
 
-    raw_output = MobileNet(image_batch)
+    raw_output = MobileNet(image_batch, isTraining=True, updateBeta=FLAGS.update_beta)
 
     restore_var = [v for v in tf.global_variables()]
     psp_list = ['conv_ds_15a','conv_ds_15b','conv_ds_15c','conv_ds_15d','conv_ds_16','conv_ds_17']

@@ -138,7 +138,7 @@ def main():
             coord)
     image_batch, label_batch = reader.dequeue(FLAGS.batch_size)
 
-    raw_output = MobileNet(image_batch, is_training=FLAGS.update_beta)
+    raw_output = MobileNet(image_batch, isTraining=True, updateBeta=FLAGS.update_beta)
 
     psp_list = ['conv_ds_15a','conv_ds_15b','conv_ds_15c','conv_ds_15d','conv_ds_16','conv_ds_17']
     all_trainable = [v for v in tf.trainable_variables()]

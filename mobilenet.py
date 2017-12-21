@@ -1,7 +1,7 @@
 import tensorflow as tf
 slim = tf.contrib.slim
 
-def MobileNet(inputs, num_classes=19, is_training=True, width_multiplier=1, scope='MobileNet', print_architecture=False):
+def MobileNet(inputs, num_classes=19, isTraining=True, updateBeta=True, width_multiplier=1, scope='MobileNet', print_architecture=False):
 
     def _depthwise_separable_conv(inputs, num_pwc_filters, width_multiplier, sc, downsample=False):
         num_pwc_filters = round(num_pwc_filters * width_multiplier)
@@ -32,12 +32,13 @@ def MobileNet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
         bn = slim.batch_norm(pointwise_conv, scope=sc+'/pw_batch_norm')
         return bn
 
+
     with slim.arg_scope( [slim.convolution2d, slim.separable_convolution2d],
                                 weights_initializer=slim.initializers.xavier_initializer(),
                                 biases_initializer=slim.init_ops.zeros_initializer()):
         with tf.variable_scope(scope) as sc:
             with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d], activation_fn=None):
-                with slim.arg_scope([slim.batch_norm], is_training=is_training, activation_fn=tf.nn.relu, fused=False):
+                with slim.arg_scope([slim.batch_norm], is_training=updateBeta, activation_fn=tf.nn.relu, fused=False):
                     net = slim.convolution2d(inputs, round(32 * width_multiplier), [3, 3], stride=2, padding='SAME', scope='conv_1')
                     net = slim.batch_norm(net, scope='conv_1/batch_norm')
                     if print_architecture: print('after conv_1: ',net)
@@ -96,6 +97,7 @@ def MobileNet(inputs, num_classes=19, is_training=True, width_multiplier=1, scop
 
                     net = _depthwise_separable_convPSP(fuse_15, [3,3], 1, 256, width_multiplier, sc='conv_ds_16')
                     if print_architecture: print('after conv_ds_16: ',net)
+                    net = slim.dropout(net, keep_prob=0.9, isTraining)
                     net = _depthwise_separable_convPSP(net, [3,3], 1, 19, width_multiplier, sc='conv_ds_17')
                     if print_architecture: print('after conv_ds_17: ',net)
 

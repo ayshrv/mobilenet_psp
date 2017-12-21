@@ -102,7 +102,7 @@ def main():
     image_batch, label_batch = tf.expand_dims(image, dim=0), tf.expand_dims(label, dim=0) # Add one batch dimension.
 
     print(image_batch)
-    net = MobileNet(image_batch, is_training = False)
+    net = MobileNet(image_batch, isTraining=False, updateBeta=False)
     #TODO Add flipped eval
 
     # Which variables to load.
