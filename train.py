@@ -175,11 +175,11 @@ def main():
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
     with tf.control_dependencies(update_ops):
-        if FLAGS.optimizer == 'momentum'
+        if FLAGS.optimizer == 'momentum':
             opt_conv = tf.train.MomentumOptimizer(learning_rate, FLAGS.momentum)
             opt_psp_w = tf.train.MomentumOptimizer(learning_rate * 10.0, FLAGS.momentum)
             opt_psp_b = tf.train.MomentumOptimizer(learning_rate * 20.0, FLAGS.momentum)
-        elif FLAGS.optimizer == 'rmsprop'
+        elif FLAGS.optimizer == 'rmsprop':
             opt_conv = tf.train.RMSPropOptimizer(learning_rate, decay=FLAGS.rmsprop_decay, momentum=FLAGS.rmsprop_momentum, epsilon=FLAGS.opt_epsilon)
             opt_psp_w = tf.train.RMSPropOptimizer(learning_rate * 10.0, decay=FLAGS.rmsprop_decay, momentum=FLAGS.rmsprop_momentum, epsilon=FLAGS.opt_epsilon)
             opt_psp_b = tf.train.RMSPropOptimizer(learning_rate * 20.0, decay=FLAGS.rmsprop_decay, momentum=FLAGS.rmsprop_momentum, epsilon=FLAGS.opt_epsilon)
