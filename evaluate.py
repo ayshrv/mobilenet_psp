@@ -32,7 +32,7 @@ tf.app.flags.DEFINE_string(
     'save_dir', '',
     'Directory where the data is located.')
 
-tf.app.flags.DEFINE_boolean('flipped-eval', True,
+tf.app.flags.DEFINE_boolean('flipped_eval', True,
                             'whether to evaluate with flipped img.')
 
 tf.app.flags.DEFINE_boolean('print_each_step', True,
@@ -40,9 +40,6 @@ tf.app.flags.DEFINE_boolean('print_each_step', True,
 
 tf.app.flags.DEFINE_integer('gpu', 0,
                             'Which GPU to use.')
-
-# tf.app.flags.DEFINE_boolean('print_architecture', False,
-#                             'Print architecure.')
 
 tf.app.flags.DEFINE_integer('image_width', 713,
                             'Which GPU to use.')
@@ -105,12 +102,21 @@ def main():
 
     print(image_batch)
     net = MobileNet(image_batch, isTraining=False, updateBeta=False)
-    #TODO Add flipped eval
+
+    with tf.variable_scope('', reuse=True):
+        flipped_img = tf.image.flip_left_right(image)
+        flipped_img = tf.expand_dims(flipped_img, dim=0)
+        net2 = MobileNet(flipped_img, isTraining=False, updateBeta=False)
 
     # Which variables to load.
     restore_var = tf.global_variables()
 
     raw_output = net
+
+    if FLAGS.flipped_eval:
+        flipped_output = tf.image.flip_left_right(tf.squeeze(net2))
+        flipped_output = tf.expand_dims(flipped_output, dim=0)
+        raw_output = tf.add_n([raw_output, flipped_output])
 
     raw_output_up = tf.image.resize_bilinear(raw_output, size=input_size, align_corners=True)
     raw_output_up = tf.argmax(raw_output_up, dimension=3)
