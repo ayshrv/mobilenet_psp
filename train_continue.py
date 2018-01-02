@@ -29,7 +29,7 @@ tf.app.flags.DEFINE_string(
     'pretrained_checkpoint', '',
     'Directory where the data is located.')
 
-tf.app.flags.DEFINE_boolean('random_scale', True,
+tf.app.flags.DEFINE_boolean('random_scale', False,
                             'Whether to randomly scale the inputs during the training.')
 
 tf.app.flags.DEFINE_boolean('random_mirror', True,
