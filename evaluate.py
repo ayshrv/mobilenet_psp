@@ -77,6 +77,8 @@ def writeToLogFile(epoch,mIoU):
 
 def main():
 
+    tf.set_random_seed(1234)
+
     temp_flags = FLAGS.__flags.items()
     temp_flags.sort()
     for params, value in FLAGS.__flags.items():
