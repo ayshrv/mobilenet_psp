@@ -32,7 +32,7 @@ tf.app.flags.DEFINE_string(
     'save_dir', '',
     'Directory where the data is located.')
 
-tf.app.flags.DEFINE_boolean('flipped_eval', True,
+tf.app.flags.DEFINE_boolean('flipped_eval', False,
                             'whether to evaluate with flipped img.')
 
 tf.app.flags.DEFINE_boolean('print_each_step', True,
