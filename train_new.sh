@@ -5,7 +5,7 @@ python train.py \
   --log_dir=logs/train6 \
   --gpu=0 \
   --num_epochs=15 \
-  --num_steps=22793 \
+  --num_steps=22973 \
   --decay_steps=5 \
   --optimizer=momentum \
   --update_mean_var=True \
@@ -17,7 +17,7 @@ python train_continue.py \
   --log_dir=logs/train6 \
   --gpu=0 \
   --num_epochs=15 \
-  --num_steps=22793 \
+  --num_steps=22973 \
   --start_epoch=16 \
   --update_mean_var=False \
   --update_beta=True
@@ -28,7 +28,7 @@ python train_continue.py \
     --log_dir=logs/train6 \
     --gpu=0 \
     --num_epochs=30 \
-    --num_steps=22793 \
+    --num_steps=22973 \
     --start_epoch=31 \
     --update_mean_var=False \
     --update_beta=False
