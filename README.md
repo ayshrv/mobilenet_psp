@@ -1,6 +1,6 @@
 # Semantic Segmentation with MobileNets and PSP Module
 
-## Installation
+## Setup
 Environment Details:
 The code has been tested with Ubuntu 16.04 LTS, Intel i5-3570, 4 Cores @ 3.40 GHz, NVIDIA GeForce GTX 1080
 
@@ -27,7 +27,7 @@ First, install NVIDIA drivers and check whether they are working with `nvidia-sm
 
 #### Training
 
-1. The weights for the model can be initialized by using Pretrained weights of MobileNet and initializing rest of weights of PSP Module (conv weights with Xavier initializer & biases initialized as 0).
+1. The weights for the model can be initialized by using Pretrained weights of [MobileNet](https://github.com/Zehaos/MobileNet) and initializing rest of weights of PSP Module from [PSPNet](https://github.com/hszhao/PSPNet) (conv weights with Xavier initializer & biases initialized as 0).
 ```
 python prepare_initialisation_weights.py --pretrained_mobilenet=MobileNetPreTrained/model.ckpt-906808 --save_model=MobileNetPSP
 ```
@@ -88,7 +88,7 @@ python evaluate.py --checkpoint_path=logs/train1/model.ckpt
 
 
 After training on Fine annotated dataset, evaluation on Cityscapes validation dataset gives **61% mIoU** without Flip.  
-Inference Time: **52ms** on GPU, **3.34s** on CPU (this is wrong!)
+Inference Time: **52ms** on GPU (TF 1.3), **3.34s** on CPU (this is wrong!)  
 Trained Weights Size: **69MB**  
 
 | Input Image | Prediction | Ground Truth |
@@ -99,3 +99,11 @@ Trained Weights Size: **69MB**
 | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_gt.png) |
 | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_gt.png) |
 <!-- | ![]() | ![]() | ![]() | -->
+
+## References
+
+1. **Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam** _MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications_, 2017 [[arxiv][1]]
+1. **Hengshuang Zhao, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, Jiaya Jia** _Pyramid Scene Parsing Network_, 2017 [[arxiv][2]]
+
+[1]: https://arxiv.org/abs/1704.04861
+[2]: https://arxiv.org/abs/1612.01105
