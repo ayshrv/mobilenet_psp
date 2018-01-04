@@ -27,11 +27,12 @@ First, install NVIDIA drivers and check whether they are working with `nvidia-sm
 
 #### Training
 
-1. The weights for the model can be initialized by using pretrained weights of [MobileNet](https://github.com/Zehaos/MobileNet) and initializing rest of weights of PSP Module from [PSPNet](https://github.com/hszhao/PSPNet) (conv weights with Xavier initializer & biases initialized as 0).
-<!-- ```
+1. The weights for the model can be initialized by using pretrained weights of [MobileNet](https://github.com/Zehaos/MobileNet) and initializing rest of weights of PSP Module from [PSPNet](https://github.com/hszhao/PSPNet) (conv weights with Xavier initializer & biases initialized as 0).  
+```
 python prepare_initialisation_weights.py --pretrained_mobilenet=MobileNetPreTrained/model.ckpt-906808 --save_model=MobileNetPSP
-``` -->
+```  
    Weights have already been saved in **`MobileNetPSP`**, so this part can be skipped.
+
 
 2. The dataset can be downloaded from [here](https://www.cityscapes-dataset.com/downloads/). The dataset should be kept in the directory structure as shown below:
 ```
@@ -69,7 +70,8 @@ chmod +x train.sh
 ```
 
 ##### Training on Coarse dataset
-For training on Coarse Dataset, `--data_list=list/train_list.txt` needs to be changed to `--data_list=list/train_extra_list.txt`
+For training on Coarse Dataset, `--data_list=list/train_list.txt` needs to be changed to   
+`--data_list=list/train_extra_list.txt`
 
 Its training procedure can be found in **`train_coarse.sh`**.
 
