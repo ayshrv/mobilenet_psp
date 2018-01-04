@@ -88,6 +88,8 @@ python evaluate.py --checkpoint_path=logs/train1/model.ckpt
 
 
 After training on Fine annotated dataset, evaluation on Cityscapes validation dataset gives **61% mIoU** without Flip.
+Inference Time: **TO BE WRITTEN**
+Trained Weights Size: **69MB**
 
 | Input Image | Prediction | Ground Truth |
 |--------|:---------:|:---------:|
@@ -96,4 +98,4 @@ After training on Fine annotated dataset, evaluation on Cityscapes validation da
 | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/6_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/6_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/6_gt.png) |
 | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_gt.png) |
 | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_gt.png) |
-| ![]() | ![]() | ![]() |
+<!-- | ![]() | ![]() | ![]() | -->
