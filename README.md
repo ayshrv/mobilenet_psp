@@ -31,7 +31,7 @@ First, install NVIDIA drivers and check whether they are working with `nvidia-sm
 <!-- ```
 python prepare_initialisation_weights.py --pretrained_mobilenet=MobileNetPreTrained/model.ckpt-906808 --save_model=MobileNetPSP
 ``` -->
-⋅⋅⋅ Weights have already been saved in **`MobileNetPSP`**, so this part can be skipped.
+   Weights have already been saved in **`MobileNetPSP`**, so this part can be skipped.
 
 2. The dataset can be downloaded from [here](https://www.cityscapes-dataset.com/downloads/). The dataset should be kept in the directory structure as shown below:
 ```
