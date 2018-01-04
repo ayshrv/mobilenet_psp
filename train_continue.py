@@ -12,7 +12,7 @@ import os
 
 slim = tf.contrib.slim
 
-#Directory Papths
+#Directory Paths
 tf.app.flags.DEFINE_string(
     'data_dir', '/home/n1703300e/SS/Datasets/cityscapes-images/',
     'Directory where the data folder is located')
