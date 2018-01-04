@@ -2,9 +2,15 @@ import os
 import glob
 
 # Put this file in Cityscapes dataset folder which contains leftImg8bit, gtCoarse & gtFine Folders
+#   cityscapes-images
+#   ├── leftImg8bit
+#   ├── gtCoarse
+#   ├── gtFine
+#   └──generate_image_list.py
 
+# Change CASE to 0,1,2,3 to pass different parameters for image list generation.
 CASE = 0
-
+# params: (split, coarse/fine, name of list saved).
 params = [ ['train', 'coarse', 'coarse_train'],
            ['train_extra', 'coarse', 'coarse_train_extra'],
            ['train', 'fine', 'train_list'],
