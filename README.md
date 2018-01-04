@@ -86,6 +86,9 @@ python evaluate.py --checkpoint_path=logs/train1/model.ckpt
 
 ## Results
 
+
+After training on Fine annotated dataset, evaluation on Cityscapes validation dataset gives **61% mIoU** without Flip.
+
 | Input Image | Prediction | Ground Truth |
 |--------|:---------:|:---------:|
 | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/1_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/1_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/1_gt.png) |
@@ -94,4 +97,3 @@ python evaluate.py --checkpoint_path=logs/train1/model.ckpt
 | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_gt.png) |
 | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_gt.png) |
 | ![]() | ![]() | ![]() |
-
