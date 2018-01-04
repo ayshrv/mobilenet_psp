@@ -81,15 +81,15 @@ python evaluate.py --checkpoint_path=logs/train1/model.ckpt
 
 `evaluate_model.sh` can be used to evaluate a model by changing its variables: `DATASET_DIR`, `DATA_LIST`, `CHECKPOINT_FOLDER`, `EPOCH`
 
-`evaluate_models_it.sh` can be used to evaluate models from range `START` to `END`.
+`evaluate_models_it.sh` can be used to evaluate models from range `START` to `END`.  
 `evaluate_models_list.sh` can be used to evaluate models in the list `EPOCHS`.
 
 ## Results
 
 
-After training on Fine annotated dataset, evaluation on Cityscapes validation dataset gives **61% mIoU** without Flip.
-Inference Time: **TO BE WRITTEN**
-Trained Weights Size: **69MB**
+After training on Fine annotated dataset, evaluation on Cityscapes validation dataset gives **61% mIoU** without Flip.  
+Inference Time: **52ms** on GPU, **3.34s** on CPU (this is wrong!)
+Trained Weights Size: **69MB**  
 
 | Input Image | Prediction | Ground Truth |
 |--------|:---------:|:---------:|
