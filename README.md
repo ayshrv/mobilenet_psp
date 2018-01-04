@@ -74,3 +74,14 @@ For training on Coarse Dataset, `--data_list=list/train_list.txt` needs to be ch
 Its training procedure can be found in `train_coarse.sh`.
 
 #### Evaluation
+Models can be evaluated by
+```
+python evaluate.py --checkpoint_path=logs/train1/model.ckpt
+```
+
+`evaluate_model.sh` can be used to evaluate a model by changing its variables: `DATASET_DIR`, `DATA_LIST`, `CHECKPOINT_FOLDER`, `EPOCH`
+
+`evaluate_models_it.sh` can be used to evaluate models from range `START` to `END`.
+`evaluate_models_list.sh` can be used to evaluate models in the list `EPOCHS`.
+
+##Results

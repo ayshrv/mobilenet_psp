@@ -5,14 +5,14 @@
 # Method 1
 DATASET_DIR=~/SS/Datasets/cityscapes-images/
 DATA_LIST=list/eval_list.txt
-CHECKPOINT_FOLDER=logs/train1-Fine-Full-Momentum/
-EPOCHS=43
-GPU=1
+CHECKPOINT_FOLDER=logs/train1-Fine-Full-Momentum/ #The folder which contains the checkpoints
+EPOCH=43 #Which epoch to evaluate
+GPU=1 #Which GPU to use
 
 EVALUATE_LOG_FILE=$CHECKPOINT_FOLDER'evaluate.log'
 
 CHECKPOINT_FILE=$CHECKPOINT_FOLDER'checkpoints/model.ckpt-'
-CHECKPOINT_FILE+=$EPOCHS
+CHECKPOINT_FILE+=$EPOCH
 
 python evaluate.py \
   --data_dir=${DATASET_DIR} \
