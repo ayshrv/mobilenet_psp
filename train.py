@@ -12,62 +12,61 @@ import os
 
 slim = tf.contrib.slim
 
-#Directory Papths
+#Directory Paths
 tf.app.flags.DEFINE_string(
     'data_dir', '/home/n1703300e/SS/Datasets/cityscapes-images/',
-    'Directory where the data is located.')
+    'Directory where the data folder is located')
 
 tf.app.flags.DEFINE_string(
     'data_list', 'list/train_list.txt',
-    'Path to file where the image list is stored.')
+    'Path to file where the image list is stored')
 
 tf.app.flags.DEFINE_string(
     'log_dir', 'logs/train1-Fine-Full-Momentum/',
-    'Directory where the data is located.')
+    'Directory where the models will be saved')
 
 tf.app.flags.DEFINE_string(
     'pretrained_checkpoint', 'MobileNetPSP/',
-    'Directory where the data is located.')
+    'Directory where the initialized weights are stored')
 
 tf.app.flags.DEFINE_boolean('random_scale', False,
-                            'Whether to randomly scale the inputs during the training.')
+                            'Whether to randomly scale the images during the training')
 
 tf.app.flags.DEFINE_boolean('random_mirror', True,
-                            'Whether to randomly scale the inputs during the training.')
+                            'Whether to randomly mirror the images during the training')
 
 tf.app.flags.DEFINE_integer('ignore_label', 255,
-                            'The index of the label to ignore during the training.')
+                            'The index of the label to ignore during the training')
 
 tf.app.flags.DEFINE_integer('gpu', 0,
-                            'Which GPU to use.')
+                            'Which GPU to use')
 
 tf.app.flags.DEFINE_integer('batch_size', 1,
-                            'Which GPU to use.')
+                            'batch size for training')
 
 tf.app.flags.DEFINE_integer('num_classes', 19,
-                            'Which GPU to use.')
+                            'No. of classes')
 
 tf.app.flags.DEFINE_integer('train_image_size', 713,
-                            'Which GPU to use.')
+                            'Image size that will used for training')
 
 tf.app.flags.DEFINE_integer('num_epochs', 100,
-                            'Which GPU to use.')
+                            'No. of epochs to train the model')
 
 tf.app.flags.DEFINE_integer('num_steps', 2975,
                             'No. of images in train dataset')
 
 tf.app.flags.DEFINE_integer('start_learning_rate', 0.01,
-                            'Which GPU to use.')
+                            'Start learning rate')
 
-#TODO Decide End Learning Rate
 tf.app.flags.DEFINE_integer('end_learning_rate', 0.0001,
-                            'Which GPU to use.')
+                            'End learning rate')
 
 tf.app.flags.DEFINE_integer('decay_steps', 40,
-                            'Which GPU to use.')
+                            'Till how many epochs to decay the learning rate to reach the end learning rate')
 
 tf.app.flags.DEFINE_integer('learning_rate_decay_power', 1,
-                            'Which GPU to use.')
+                            'Power to which learning rate is decayed')
 
 tf.app.flags.DEFINE_string('optimizer', 'momentum',
                             'momentum/rmsprop')
@@ -89,10 +88,10 @@ tf.app.flags.DEFINE_integer('weight_decay', 0.00004,
                             'Regularisation Parameter.')
 
 tf.app.flags.DEFINE_boolean('update_beta', True,
-                            'Train without changing beta of batch norm layer.')
+                            'Whether to update beta of batchnorm layer while training or not')
 
 tf.app.flags.DEFINE_boolean('update_mean_var', True,
-                            'whether to get update_op from tf.Graphic_Key.')
+                            'Whether to update moving mean/variances or not')
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -170,6 +169,7 @@ def main():
 
     # Pixel-wise softmax loss.
     loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=prediction, labels=gt)
+    # Regularisation loss
     l2_losses = [FLAGS.weight_decay * tf.nn.l2_loss(v) for v in tf.trainable_variables() if 'weights' in v.name]
     reduced_loss = tf.reduce_mean(loss) + tf.add_n(l2_losses)
     #TODO  auxilary loss
@@ -233,6 +233,7 @@ def main():
 
             duration = time.time() - start_time
             print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
+            #TODO ignore NaN loss
             total_loss += loss_value
 
         save(saver, sess, FLAGS.log_dir, epoch)

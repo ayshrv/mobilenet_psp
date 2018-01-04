@@ -69,6 +69,7 @@ def MobileNet(inputs, num_classes=19, isTraining=True, updateBeta=True, width_mu
                     net = _depthwise_separable_conv(net, 1024, width_multiplier, sc='conv_ds_14')
                     if print_architecture: print('after conv_ds_14: ',net)
 
+                    # PSP Module
                     net_a = slim.avg_pool2d(net, [90,90], stride=90, scope='conv_ds_15a/pool_15_1a')
                     if print_architecture: print('after pool_15_1a: ',net_a)
                     net_b = slim.avg_pool2d(net, [45,45], stride=45, scope='conv_ds_15b/pool_15_1b')

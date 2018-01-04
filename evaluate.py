@@ -18,7 +18,7 @@ input_size = [1024, 2048]
 
 tf.app.flags.DEFINE_string(
     'data_dir', '/home/n1703300e/SS/Datasets/cityscapes-images/',
-    'Directory where the data is located.')
+    'Directory where the data folder is located')
 
 tf.app.flags.DEFINE_string(
     'data_list', 'list/eval_list.txt',
@@ -26,33 +26,33 @@ tf.app.flags.DEFINE_string(
 
 tf.app.flags.DEFINE_string(
     'checkpoint_path', '',
-    'Directory where the data is located.')
+    'Path to the model to evaluate')
 
 tf.app.flags.DEFINE_string(
     'save_dir', '',
-    'Directory where the data is located.')
+    '')
 
 tf.app.flags.DEFINE_boolean('flipped_eval', False,
-                            'whether to evaluate with flipped img.')
+                            'whether to evaluate with flipped image')
 
 tf.app.flags.DEFINE_boolean('print_each_step', True,
-                            'whether to print after eah step')
+                            'whether to print mIoU after every 100 steps')
 
 tf.app.flags.DEFINE_integer('gpu', 0,
                             'Which GPU to use.')
 
 tf.app.flags.DEFINE_integer('image_width', 713,
-                            'Which GPU to use.')
+                            'Width of image to use')
 
 tf.app.flags.DEFINE_integer('image_height', 713,
-                            'Which GPU to use.')
+                            'Height of image to use')
 
 tf.app.flags.DEFINE_integer('num_steps', 500,
                             'No. of images in val dataset')
 
 tf.app.flags.DEFINE_string(
     'evaluate_log_file', 'evaluate.log',
-    'File where the results are appended.')
+    'File to which the results are appended.')
 
 
 FLAGS = tf.app.flags.FLAGS
