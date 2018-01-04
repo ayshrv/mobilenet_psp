@@ -85,3 +85,13 @@ python evaluate.py --checkpoint_path=logs/train1/model.ckpt
 `evaluate_models_list.sh` can be used to evaluate models in the list `EPOCHS`.
 
 ## Results
+
+| Input Image | Prediction | Ground Truth |
+|--------|:---------:|:---------:|
+| ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/1_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/1_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/1_gt.png) |
+| ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/4_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/4_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/4_gt.png) |
+| ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/6_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/6_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/6_gt.png) |
+| ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/7_gt.png) |
+| ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_im.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_pred.png) | ![](https://github.com/interritus1996/mobilenet_psp/blob/master/results/8_gt.png) |
+| ![]() | ![]() | ![]() |
+
